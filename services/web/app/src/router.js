@@ -23,7 +23,7 @@ const DocumentController = require('./Features/Documents/DocumentController')
 const CompileManager = require('./Features/Compile/CompileManager')
 const CompileController = require('./Features/Compile/CompileController')
 const ClsiCookieManager = require('./Features/Compile/ClsiCookieManager')(
-  Settings.apis.clsi != null ? Settings.apis.clsi.backendGroupName : undefined
+	Settings.apis.clsi != null ? Settings.apis.clsi.backendGroupName : undefined
 )
 const HealthCheckController = require('./Features/HealthCheck/HealthCheckController')
 const ProjectDownloadsController = require('./Features/Downloads/ProjectDownloadsController')
@@ -952,6 +952,10 @@ function initialize(webRouter, privateApiRouter, publicApiRouter) {
     '/admin/register',
     AuthorizationMiddleware.ensureUserIsSiteAdmin,
     UserController.register
+  )
+  webRouter.post(
+    '/register',
+    UserController.registerPublic
   )
   if (!Features.hasFeature('saas')) {
     webRouter.post(

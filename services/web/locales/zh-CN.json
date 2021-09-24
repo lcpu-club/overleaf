@@ -949,7 +949,7 @@
   "compiling": "正在编译",
   "click_here_to_preview_pdf": "点击预览PDF",
   "server_error": "服务器错误",
-  "somthing_went_wrong_compiling": "抱歉，出错了，您的项目无法编译。请在几分钟后再试。",
+  "somthing_went_wrong_compiling": "抱歉，出错了，您的项目无法编译。请在几分钟后再试。这可能是由于您使用了未受支持的字体，或是写出了无限循环的代码，请联系makiras@bupt.edu.cn获取支持。",
   "timedout": "超时",
   "proj_timed_out_reason": "抱歉，您的编译运行时间太长，已超时。这可能是由于LaTeX错误，或大量的高分辨率图像或复杂的图表。",
   "no_errors_good_job": "没有错误，好样的！",
