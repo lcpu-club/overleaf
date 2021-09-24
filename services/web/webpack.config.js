@@ -1,34 +1,45 @@
-const fs = require('fs')
 const path = require('path')
+const glob = require('glob')
 const webpack = require('webpack')
 const CopyPlugin = require('copy-webpack-plugin')
-const ManifestPlugin = require('webpack-manifest-plugin')
+const WebpackAssetsManifest = require('webpack-assets-manifest')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const PackageVersions = require('./app/src/infrastructure/PackageVersions')
-
-const MODULES_PATH = path.join(__dirname, '/modules')
 
 // Generate a hash of entry points, including modules
 const entryPoints = {
   serviceWorker: './frontend/js/serviceWorker.js',
   main: './frontend/js/main.js',
   ide: './frontend/js/ide.js',
+  'cdn-load-test': './frontend/js/cdn-load-test.js',
+  marketing: './frontend/js/marketing.js',
   style: './frontend/stylesheets/style.less',
   'ieee-style': './frontend/stylesheets/ieee-style.less',
   'light-style': './frontend/stylesheets/light-style.less',
 }
 
-// Attempt to load frontend entry-points from modules, if they exist
-if (fs.existsSync(MODULES_PATH)) {
-  fs.readdirSync(MODULES_PATH).reduce((acc, module) => {
-    const entryPath = path.join(MODULES_PATH, module, '/frontend/js/index.js')
-    if (fs.existsSync(entryPath)) {
-      acc[module] = entryPath
-    }
-    return acc
-  }, entryPoints)
-}
+// Add entrypoints for each "page"
+glob
+  .sync(path.join(__dirname, 'modules/*/frontend/js/pages/**/*.js'))
+  .forEach(page => {
+    // in: /workspace/services/web/modules/foo/frontend/js/pages/bar.js
+    // out: modules/foo/pages/bar
+    const name = path
+      .relative(__dirname, page)
+      .replace(/frontend[/]js[/]/, '')
+      .replace(/.js$/, '')
+    entryPoints[name] = './' + path.relative(__dirname, page)
+  })
+
+glob.sync(path.join(__dirname, 'frontend/js/pages/**/*.js')).forEach(page => {
+  // in: /workspace/services/web/frontend/js/pages/marketing/homepage.js
+  // out: pages/marketing/homepage
+  const name = path
+    .relative(path.join(__dirname, 'frontend/js/'), page)
+    .replace(/.js$/, '')
+  entryPoints[name] = './' + path.relative(__dirname, page)
+})
 
 module.exports = {
   // Defines the "entry point(s)" for the application - i.e. the file which
@@ -40,6 +51,8 @@ module.exports = {
   // kept in memory for speed
   output: {
     path: path.join(__dirname, '/public'),
+
+    publicPath: '/',
 
     // By default write into js directory
     filename: 'js/[name].js',
@@ -215,8 +228,6 @@ module.exports = {
     alias: {
       // Aliases for AMD modules
 
-      // Shortcut to vendored dependencies in frontend/js/vendor/libs
-      libs: path.join(__dirname, 'frontend/js/vendor/libs'),
       // Enables ace/ace shortcut
       ace: 'ace-builds/src-noconflict',
       // fineupload vendored dependency (which we're aliasing to fineuploadER
@@ -228,32 +239,20 @@ module.exports = {
     },
   },
 
-  // Split out vendored dependencies that are shared between 2 or more "real
-  // bundles" (e.g. ide.js/main.js) as a separate "libraries" bundle and ensure
-  // that they are de-duplicated from the other bundles. This allows the
-  // libraries bundle to be independently cached (as it likely will change less
-  // than the other bundles)
+  // Split out files into separate (derived) bundles if they are shared between
+  // multiple (explicit) bundles, according to some webpack heuristics
   optimization: {
     splitChunks: {
-      cacheGroups: {
-        libraries: {
-          test: /[\\/]node_modules[\\/]|[\\/]frontend[\\/]js[\\/]vendor[\\/]libs[\\/]/,
-          name: 'libraries',
-          chunks: 'initial',
-          minChunks: 2,
-        },
-      },
+      chunks: 'all',
     },
   },
 
   plugins: [
     // Generate a manifest.json file which is used by the backend to map the
     // base filenames to the generated output filenames
-    new ManifestPlugin({
-      // Always write the manifest file to disk (even if in dev mode, where
-      // files are held in memory). This is needed because the server will read
-      // this file (from disk) when building the script's url
-      writeToFileEmit: true,
+    new WebpackAssetsManifest({
+      entrypoints: true,
+      publicPath: true,
     }),
 
     // Prevent moment from loading (very large) locale files that aren't used

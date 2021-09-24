@@ -377,10 +377,13 @@ module.exports = CollaboratorsInviteController = {
           'project:membership:changed',
           { invites: true, members: true }
         )
-        AnalyticsManager.recordEvent(currentUser._id, 'project-invite-accept', {
-          projectId,
-          userId: currentUser._id,
-        })
+        AnalyticsManager.recordEventForUser(
+          currentUser._id,
+          'project-invite-accept',
+          {
+            projectId,
+          }
+        )
         if (req.xhr) {
           return res.sendStatus(204) //  Done async via project page notification
         } else {

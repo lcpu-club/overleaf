@@ -612,7 +612,11 @@ describe('<ShareProjectModal/>', function () {
   })
 
   it('displays a message when the collaborator limit is reached', async function () {
-    fetchMock.post('/event/project-sharing-paywall-prompt', {})
+    fetchMock.post(
+      '/event/paywall-prompt',
+      {},
+      { body: { 'paywall-type': 'project-sharing' } }
+    )
 
     renderWithEditorContext(<ShareProjectModal {...modalProps} />, {
       user: {
@@ -683,7 +687,7 @@ describe('<ShareProjectModal/>', function () {
 
     await respondWithError('cannot_invite_non_user')
     await screen.findByText(
-      `Can't send invite. Recipient must already have a Overleaf account`
+      `Can’t send invite. Recipient must already have a Overleaf account`
     )
 
     await respondWithError('cannot_verify_user_not_robot')
@@ -692,7 +696,7 @@ describe('<ShareProjectModal/>', function () {
     )
 
     await respondWithError('cannot_invite_self')
-    await screen.findByText(`Can't send invite to yourself`)
+    await screen.findByText(`Can’t send invite to yourself`)
 
     await respondWithError('invalid_email')
     await screen.findByText(`An email address is invalid`)

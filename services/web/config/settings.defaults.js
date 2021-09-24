@@ -212,6 +212,9 @@ module.exports = {
     notifications: {
       url: `http://${process.env.NOTIFICATIONS_HOST || 'localhost'}:3042`,
     },
+    webpack: {
+      url: `http://${process.env.WEBPACK_HOST || 'localhost'}:3808`,
+    },
 
     // For legacy reasons, we need to populate the below objects.
     v1: {},
@@ -297,6 +300,12 @@ module.exports = {
     personal: defaultFeatures,
   },
 
+  groupPlanModalOptions: {
+    plan_codes: [],
+    currencies: [],
+    sizes: [],
+    usages: [],
+  },
   plans: [
     {
       planCode: 'personal',

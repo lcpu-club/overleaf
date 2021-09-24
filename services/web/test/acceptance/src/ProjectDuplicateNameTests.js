@@ -1,33 +1,10 @@
-/* eslint-disable
-    camelcase,
-    node/handle-callback-err,
-    max-len,
-    mocha/no-identical-title,
-    no-path-concat,
-    no-return-assign,
-    no-unused-vars,
-*/
-// TODO: This file was created by bulk-decaffeinate.
-// Fix any style issues and re-enable lint.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-const async = require('async')
 const { expect } = require('chai')
 const sinon = require('sinon')
-const mkdirp = require('mkdirp')
 const Path = require('path')
 const fs = require('fs')
-const Settings = require('@overleaf/settings')
 const _ = require('underscore')
-
-const ProjectGetter = require('../../../app/src/Features/Project/ProjectGetter.js')
-
-const request = require('./helpers/request')
 const User = require('./helpers/User')
+const UserHelper = require('./helpers/UserHelper')
 
 const MockDocstoreApiClass = require('./mocks/MockDocstoreApi')
 const MockFilestoreApiClass = require('./mocks/MockFilestoreApi')
@@ -44,20 +21,19 @@ describe('ProjectDuplicateNames', function () {
     this.owner = new User()
     this.owner.login(done)
     this.project = {}
-    return (this.callback = sinon.stub())
+    this.callback = sinon.stub()
   })
 
   describe('creating a project from the example template', function () {
     beforeEach(function (done) {
-      return this.owner.createProject(
+      this.owner.createProject(
         'example-project',
         { template: 'example' },
-        (error, project_id) => {
-          if (error != null) {
-            throw error
-          }
-          this.example_project_id = project_id
-          return this.owner.getProject(project_id, (error, project) => {
+        (error, projectId) => {
+          expect(error).to.not.exist
+          this.example_project_id = projectId
+          this.owner.getProject(projectId, (error, project) => {
+            expect(error).to.not.exist
             this.project = project
             this.mainTexDoc = _.find(
               project.rootFolder[0].docs,
@@ -65,15 +41,15 @@ describe('ProjectDuplicateNames', function () {
             )
             this.refBibDoc = _.find(
               project.rootFolder[0].docs,
-              doc => doc.name === 'references.bib'
+              doc => doc.name === 'sample.bib'
             )
             this.imageFile = _.find(
               project.rootFolder[0].fileRefs,
-              file => file.name === 'universe.jpg'
+              file => file.name === 'frog.jpg'
             )
             this.rootFolderId = project.rootFolder[0]._id.toString()
             // create a folder called 'testfolder'
-            return this.owner.request.post(
+            this.owner.request.post(
               {
                 uri: `/project/${this.example_project_id}/folder`,
                 json: {
@@ -82,8 +58,9 @@ describe('ProjectDuplicateNames', function () {
                 },
               },
               (err, res, body) => {
+                expect(err).to.not.exist
                 this.testFolderId = body._id
-                return done()
+                done()
               }
             )
           })
@@ -93,23 +70,23 @@ describe('ProjectDuplicateNames', function () {
 
     it('should create a project', function () {
       expect(this.project.rootFolder[0].docs.length).to.equal(2)
-      return expect(this.project.rootFolder[0].fileRefs.length).to.equal(1)
+      expect(this.project.rootFolder[0].fileRefs.length).to.equal(1)
     })
 
     it('should create two docs in the docstore', function () {
       const docs = MockDocstoreApi.docs[this.example_project_id]
-      return expect(Object.keys(docs).length).to.equal(2)
+      expect(Object.keys(docs).length).to.equal(2)
     })
 
     it('should create one file in the filestore', function () {
       const files = MockFilestoreApi.files[this.example_project_id]
-      return expect(Object.keys(files).length).to.equal(1)
+      expect(Object.keys(files).length).to.equal(1)
     })
 
     describe('for an existing doc', function () {
       describe('trying to add a doc with the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/doc`,
               json: {
@@ -118,20 +95,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to add a folder with the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/folder`,
               json: {
@@ -140,36 +118,15 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
-        })
-      })
-
-      describe('trying to add a folder with the same name', function () {
-        beforeEach(function (done) {
-          return this.owner.request.post(
-            {
-              uri: `/project/${this.example_project_id}/folder`,
-              json: {
-                name: 'main.tex',
-                parent_folder_id: this.rootFolderId,
-              },
-            },
-            (err, res, body) => {
-              this.res = res
-              return done()
-            }
-          )
-        })
-
-        it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
     })
@@ -177,81 +134,84 @@ describe('ProjectDuplicateNames', function () {
     describe('for an existing file', function () {
       describe('trying to add a doc with the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/doc`,
               json: {
-                name: 'universe.jpg',
+                name: 'frog.jpg',
                 parent_folder_id: this.rootFolderId,
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to add a folder with the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/folder`,
               json: {
-                name: 'universe.jpg',
+                name: 'frog.jpg',
                 parent_folder_id: this.rootFolderId,
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to upload a file with the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/upload`,
               json: true,
               qs: {
                 folder_id: this.rootFolderId,
-                qqfilename: 'universe.jpg',
+                qqfilename: 'frog.jpg',
               },
               formData: {
                 qqfile: {
                   value: fs.createReadStream(
-                    Path.resolve(__dirname + '/../files/1pixel.png')
+                    Path.join(__dirname, '/../files/1pixel.png')
                   ),
                   options: {
-                    filename: 'universe.jpg',
+                    filename: 'frog.jpg',
                     contentType: 'image/jpeg',
                   },
                 },
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.body = body
               // update the image id because we have replaced the file
               this.imageFile._id = this.body.entity_id
-              return done()
+              done()
             }
           )
         })
 
         it('should succeed (overwriting the file)', function () {
-          return expect(this.body.success).to.equal(true)
+          expect(this.body.success).to.equal(true)
         })
       })
     })
@@ -260,7 +220,7 @@ describe('ProjectDuplicateNames', function () {
     describe('for an existing folder', function () {
       describe('trying to add a doc with the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/doc`,
               json: {
@@ -269,20 +229,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to add a folder with the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/folder`,
               json: {
@@ -291,31 +252,32 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to upload a file with the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/upload`,
               json: true,
               qs: {
                 folder_id: this.rootFolderId,
-                qqfilename: 'universe.jpg',
+                qqfilename: 'frog.jpg',
               },
               formData: {
                 qqfile: {
                   value: fs.createReadStream(
-                    Path.resolve(__dirname + '/../files/1pixel.png')
+                    Path.join(__dirname, '/../files/1pixel.png')
                   ),
                   options: {
                     filename: 'testfolder',
@@ -325,22 +287,23 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.body = body
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with failure status', function () {
-          return expect(this.body.success).to.equal(false)
+          expect(this.body.success).to.equal(false)
         })
       })
     })
 
-    describe('for an existing doc', function () {
+    describe('rename for an existing doc', function () {
       describe('trying to rename a doc to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/doc/${this.refBibDoc._id}/rename`,
               json: {
@@ -348,20 +311,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to rename a folder to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/folder/${this.testFolderId}/rename`,
               json: {
@@ -369,20 +333,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to rename a file to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/file/${this.imageFile._id}/rename`,
               json: {
@@ -390,87 +355,91 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with failure status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
     })
 
-    describe('for an existing file', function () {
+    describe('rename for an existing file', function () {
       describe('trying to rename a doc to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/doc/${this.refBibDoc._id}/rename`,
               json: {
-                name: 'universe.jpg',
+                name: 'frog.jpg',
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to rename a folder to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/folder/${this.testFolderId}/rename`,
               json: {
-                name: 'universe.jpg',
+                name: 'frog.jpg',
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to rename a file to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/file/${this.imageFile._id}/rename`,
               json: {
-                name: 'universe.jpg',
+                name: 'frog.jpg',
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with failure status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
     })
 
-    describe('for an existing folder', function () {
+    describe('rename for an existing folder', function () {
       describe('trying to rename a doc to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/doc/${this.refBibDoc._id}/rename`,
               json: {
@@ -478,20 +447,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to rename a folder to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/folder/${this.testFolderId}/rename`,
               json: {
@@ -499,20 +469,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to rename a file to the same name', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/file/${this.imageFile._id}/rename`,
               json: {
@@ -520,21 +491,22 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with failure status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
     })
 
     describe('for an existing folder with a file with the same name', function () {
       beforeEach(function (done) {
-        return this.owner.request.post(
+        this.owner.request.post(
           {
             uri: `/project/${this.example_project_id}/doc`,
             json: {
@@ -543,16 +515,22 @@ describe('ProjectDuplicateNames', function () {
             },
           },
           (err, res, body) => {
-            return this.owner.request.post(
+            if (err) {
+              throw err
+            }
+            this.owner.request.post(
               {
                 uri: `/project/${this.example_project_id}/doc`,
                 json: {
-                  name: 'universe.jpg',
+                  name: 'frog.jpg',
                   parent_folder_id: this.testFolderId,
                 },
               },
               (err, res, body) => {
-                return this.owner.request.post(
+                if (err) {
+                  throw err
+                }
+                this.owner.request.post(
                   {
                     uri: `/project/${this.example_project_id}/folder`,
                     json: {
@@ -561,8 +539,11 @@ describe('ProjectDuplicateNames', function () {
                     },
                   },
                   (err, res, body) => {
+                    if (err) {
+                      throw err
+                    }
                     this.subFolderId = body._id
-                    return this.owner.request.post(
+                    this.owner.request.post(
                       {
                         uri: `/project/${this.example_project_id}/folder`,
                         json: {
@@ -571,8 +552,11 @@ describe('ProjectDuplicateNames', function () {
                         },
                       },
                       (err, res, body) => {
+                        if (err) {
+                          throw err
+                        }
                         this.otherFolderId = body._id
-                        return done()
+                        done()
                       }
                     )
                   }
@@ -585,7 +569,7 @@ describe('ProjectDuplicateNames', function () {
 
       describe('trying to move a doc into the folder', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/doc/${this.mainTexDoc._id}/move`,
               json: {
@@ -593,20 +577,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to move a file into the folder', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/file/${this.imageFile._id}/move`,
               json: {
@@ -614,20 +599,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to move a folder into the folder', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/folder/${this.otherFolderId}/move`,
               json: {
@@ -635,20 +621,21 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
 
       describe('trying to move a folder into a subfolder of itself', function () {
         beforeEach(function (done) {
-          return this.owner.request.post(
+          this.owner.request.post(
             {
               uri: `/project/${this.example_project_id}/folder/${this.testFolderId}/move`,
               json: {
@@ -656,16 +643,40 @@ describe('ProjectDuplicateNames', function () {
               },
             },
             (err, res, body) => {
+              expect(err).to.not.exist
               this.res = res
-              return done()
+              done()
             }
           )
         })
 
         it('should respond with 400 error status', function () {
-          return expect(this.res.statusCode).to.equal(400)
+          expect(this.res.statusCode).to.equal(400)
         })
       })
+    })
+  })
+
+  describe('regex characters in title', function () {
+    let response, userHelper
+    beforeEach(async function () {
+      userHelper = new UserHelper()
+      userHelper = await UserHelper.createUser()
+      userHelper = await UserHelper.loginUser(
+        userHelper.getDefaultEmailPassword()
+      )
+    })
+    it('should handle characters that would cause an invalid regular expression', async function () {
+      const projectName = 'Example (test'
+      response = await userHelper.request.post('/project/new', {
+        simple: false,
+        form: { projectName },
+      })
+      expect(response.statusCode).to.equal(200) // can create project
+      response = await userHelper.request.get(
+        `/project/${JSON.parse(response.body).project_id}`
+      )
+      expect(response.statusCode).to.equal(200) // can open project
     })
   })
 })

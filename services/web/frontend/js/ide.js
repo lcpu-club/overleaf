@@ -66,6 +66,7 @@ import './main/system-messages'
 import '../../modules/modules-ide.js'
 import './shared/context/controllers/root-context-controller'
 import './features/editor-navigation-toolbar/controllers/editor-navigation-toolbar-controller'
+import './features/pdf-preview/controllers/pdf-preview-controller'
 import './features/share-project-modal/controllers/react-share-project-modal-controller'
 import getMeta from './utils/meta'
 
@@ -311,6 +312,18 @@ If the project has been renamed please look in your project list for a new proje
       }
     } else {
       $scope.switchToSideBySideLayout()
+    }
+
+    $scope.handleKeyDown = event => {
+      if (event.shiftKey || event.altKey) {
+        return
+      }
+
+      // Ctrl+s or Cmd+s => recompile
+      if (event.key === 's' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault()
+        $scope.recompileViaKey()
+      }
     }
 
     try {

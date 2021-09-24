@@ -62,6 +62,8 @@ const _ = require('underscore')
 module.exports = { initialize }
 
 function initialize(webRouter, privateApiRouter, publicApiRouter) {
+  webRouter.use(unsupportedBrowserMiddleware)
+
   if (!Settings.allowPublicAccess) {
     webRouter.all('*', AuthenticationController.requireGlobalLogin)
   }
@@ -277,7 +279,6 @@ function initialize(webRouter, privateApiRouter, publicApiRouter) {
       maxRequests: 30,
       timeInterval: 60,
     }),
-    unsupportedBrowserMiddleware,
     ProjectController.projectListPage
   )
   webRouter.post(
@@ -299,7 +300,6 @@ function initialize(webRouter, privateApiRouter, publicApiRouter) {
       maxRequests: 15,
       timeInterval: 60,
     }),
-    unsupportedBrowserMiddleware,
     AuthenticationController.validateUserSession(),
     AuthorizationMiddleware.ensureUserCanReadProject,
     ProjectController.loadEditor
@@ -316,6 +316,7 @@ function initialize(webRouter, privateApiRouter, publicApiRouter) {
   )
   webRouter.post(
     '/project/:Project_id/settings',
+    validate({ body: Joi.object() }),
     AuthorizationMiddleware.ensureUserCanWriteProjectSettings,
     ProjectController.updateProjectSettings
   )
@@ -1140,7 +1141,10 @@ function initialize(webRouter, privateApiRouter, publicApiRouter) {
       maxRequests: 15,
       timeInterval: 60,
     }),
-    AnalyticsRegistrationSourceMiddleware.setSource('link-sharing'),
+    AnalyticsRegistrationSourceMiddleware.setSource(
+      'collaboration',
+      'link-sharing'
+    ),
     TokenAccessController.tokenAccessPage,
     AnalyticsRegistrationSourceMiddleware.clearSource()
   )
@@ -1152,7 +1156,10 @@ function initialize(webRouter, privateApiRouter, publicApiRouter) {
       maxRequests: 15,
       timeInterval: 60,
     }),
-    AnalyticsRegistrationSourceMiddleware.setSource('link-sharing'),
+    AnalyticsRegistrationSourceMiddleware.setSource(
+      'collaboration',
+      'link-sharing'
+    ),
     TokenAccessController.tokenAccessPage,
     AnalyticsRegistrationSourceMiddleware.clearSource()
   )

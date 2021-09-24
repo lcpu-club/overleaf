@@ -14,8 +14,8 @@
  */
 import App from '../../base'
 import _ from 'lodash'
-import 'libs/jquery-layout'
-import 'libs/jquery.ui.touch-punch'
+import '../../vendor/libs/jquery-layout'
+import '../../vendor/libs/jquery.ui.touch-punch'
 
 export default App.directive('layout', ($parse, $compile, ide) => ({
   compile() {
@@ -162,7 +162,9 @@ export default App.directive('layout', ($parse, $compile, ide) => ({
             }
           }
 
-          return element.layout().resizeAll()
+          ide.$timeout(() => {
+            element.layout().resizeAll()
+          })
         }
 
         element.layout(options)

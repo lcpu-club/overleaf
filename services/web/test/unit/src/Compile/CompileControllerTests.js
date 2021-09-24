@@ -49,7 +49,7 @@ describe('CompileController', function () {
     }
     this.jar = { cookie: 'stuff' }
     this.ClsiCookieManager = {
-      getCookieJar: sinon.stub().callsArgWith(1, null, this.jar),
+      getCookieJar: sinon.stub().callsArgWith(2, null, this.jar),
     }
     this.SessionManager = {
       getLoggedInUser: sinon.stub().callsArgWith(1, null, this.user),
@@ -107,6 +107,7 @@ describe('CompileController', function () {
           .calledWith(this.project_id, this.user_id, {
             isAutoCompile: false,
             enablePdfCaching: false,
+            fileLineErrors: false,
           })
           .should.equal(true)
       })
@@ -137,6 +138,7 @@ describe('CompileController', function () {
           .calledWith(this.project_id, this.user_id, {
             isAutoCompile: true,
             enablePdfCaching: false,
+            fileLineErrors: false,
           })
           .should.equal(true)
       })
@@ -154,6 +156,7 @@ describe('CompileController', function () {
             isAutoCompile: false,
             enablePdfCaching: false,
             draft: true,
+            fileLineErrors: false,
           })
           .should.equal(true)
       })

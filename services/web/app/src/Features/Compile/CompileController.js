@@ -44,10 +44,12 @@ module.exports = CompileController = {
     const project_id = req.params.Project_id
     const isAutoCompile = !!req.query.auto_compile
     const enablePdfCaching = !!req.query.enable_pdf_caching
+    const fileLineErrors = !!req.query.file_line_errors
     const user_id = SessionManager.getLoggedInUserId(req.session)
     const options = {
       isAutoCompile,
       enablePdfCaching,
+      fileLineErrors,
     }
 
     if (req.body.rootDoc_id) {
@@ -572,10 +574,11 @@ module.exports = CompileController = {
 
 function _getPersistenceOptions(req, projectId, callback) {
   const { clsiserverid } = req.query
+  const user_id = SessionManager.getLoggedInUserId(req)
   if (clsiserverid && typeof clsiserverid === 'string') {
     callback(null, { qs: { clsiserverid } })
   } else {
-    ClsiCookieManager.getCookieJar(projectId, (err, jar) => {
+    ClsiCookieManager.getCookieJar(projectId, user_id, (err, jar) => {
       callback(err, { jar })
     })
   }

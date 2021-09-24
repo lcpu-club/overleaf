@@ -49,7 +49,7 @@
     "@babel/preset-react": "^7.14.5",
     "@overleaf/metrics": "^3.5.1",
     "@overleaf/o-error": "^3.3.1",
-    "@overleaf/object-persistor": "https://github.com/overleaf/object-persistor/archive/8fbc9ed03206bfb54368578d22b7ac4f285baa25.tar.gz",
+    "@overleaf/object-persistor": "^1.0.1",
     "@overleaf/redis-wrapper": "^2.0.0",
     "@overleaf/settings": "^2.1.1",
     "@pollyjs/adapter-node-http": "^4.2.1",
@@ -73,6 +73,7 @@
     "basic-auth-connect": "^1.0.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
+    "bootstrap": "^3.4.1",
     "bowser": "^2.11.0",
     "bufferedstream": "1.6.0",
     "bull": "^3.18.0",
@@ -90,7 +91,7 @@
     "csurf": "^1.11.0",
     "d3": "^3.5.16",
     "dateformat": "1.0.4-1.2.3",
-    "daterangepicker": "https://github.com/40thieves/daterangepicker/archive/e496d2d44ca53e208c930e4cb4bcf29bcefa4550.tar.gz",
+    "daterangepicker": "https://github.com/overleaf/daterangepicker/archive/e496d2d44ca53e208c930e4cb4bcf29bcefa4550.tar.gz",
     "downshift": "^6.1.0",
     "east": "^2.0.2",
     "express": "4.17.1",
@@ -256,9 +257,9 @@
     "to-string-loader": "^1.1.6",
     "val-loader": "^1.1.1",
     "webpack": "^4.44.2",
+    "webpack-assets-manifest": "^4.0.6",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0",
-    "webpack-manifest-plugin": "^2.2.0",
     "webpack-merge": "^4.2.2"
   }
 }

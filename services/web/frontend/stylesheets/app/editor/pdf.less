@@ -146,6 +146,9 @@
       box-sizing: content-box;
       user-select: none;
     }
+    &:focus-within {
+      outline: none;
+    }
   }
   .progress-thin {
     position: absolute;
@@ -243,6 +246,7 @@
   }
   pre {
     font-size: 12px;
+    white-space: pre-wrap;
   }
   .dropdown {
     position: relative;

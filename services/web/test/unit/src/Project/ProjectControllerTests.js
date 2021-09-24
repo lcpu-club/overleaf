@@ -130,6 +130,14 @@ describe('ProjectController', function () {
       },
       getTestSegmentation: sinon.stub().yields(null, { enabled: false }),
     }
+    this.SplitTestV2Handler = {
+      promises: {
+        getAssignment: sinon.stub().resolves({ active: false }),
+        assignInLocalsContext: sinon.stub().resolves(),
+      },
+      getAssignment: sinon.stub().yields(null, { active: false }),
+      assignInLocalsContext: sinon.stub().yields(null),
+    }
 
     this.ProjectController = SandboxedModule.require(MODULE_PATH, {
       requires: {
@@ -137,6 +145,7 @@ describe('ProjectController', function () {
         '@overleaf/settings': this.settings,
         '@overleaf/metrics': this.Metrics,
         '../SplitTests/SplitTestHandler': this.SplitTestHandler,
+        '../SplitTests/SplitTestV2Handler': this.SplitTestV2Handler,
         './ProjectDeleter': this.ProjectDeleter,
         './ProjectDuplicator': this.ProjectDuplicator,
         './ProjectCreationHandler': this.ProjectCreationHandler,
@@ -164,7 +173,7 @@ describe('ProjectController', function () {
           .BrandVariationsHandler,
         '../ThirdPartyDataStore/TpdsProjectFlusher': this.TpdsProjectFlusher,
         '../../models/Project': {},
-        '../Analytics/AnalyticsManager': { recordEvent: () => {} },
+        '../Analytics/AnalyticsManager': { recordEventForUser: () => {} },
         '../../infrastructure/Modules': {
           hooks: { fire: sinon.stub().yields(null, []) },
         },
@@ -1228,6 +1237,9 @@ describe('ProjectController', function () {
       })
 
       describe('during regular roll-out', function () {
+        before(function () {
+          this.skip()
+        })
         describe('disabled', function () {
           showNoVariant()
 
@@ -1274,6 +1286,29 @@ describe('ProjectController', function () {
             tagAnonymous()
             expectToCachePDFOnly()
           })
+        })
+      })
+
+      describe('during opt-in only', function () {
+        describe('with no query', function () {
+          expectBandwidthTrackingDisabled()
+          expectPDFCachingDisabled()
+        })
+
+        describe('with enable_pdf_caching=false', function () {
+          beforeEach(function () {
+            this.req.query.enable_pdf_caching = 'false'
+          })
+          expectBandwidthTrackingDisabled()
+          expectPDFCachingDisabled()
+        })
+
+        describe('with enable_pdf_caching=true', function () {
+          beforeEach(function () {
+            this.req.query.enable_pdf_caching = 'true'
+          })
+          expectBandwidthTrackingEnabled()
+          expectPDFCachingEnabled()
         })
       })
     })

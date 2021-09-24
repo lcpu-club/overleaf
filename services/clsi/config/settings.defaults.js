@@ -66,6 +66,7 @@ module.exports = {
   filestoreDomainOveride: process.env.FILESTORE_DOMAIN_OVERRIDE,
   texliveImageNameOveride: process.env.TEX_LIVE_IMAGE_NAME_OVERRIDE,
   texliveOpenoutAny: process.env.TEXLIVE_OPENOUT_ANY,
+  texliveMaxPrintLine: process.env.TEXLIVE_MAX_PRINT_LINE,
   sentry: {
     dsn: process.env.SENTRY_DSN,
   },
@@ -76,6 +77,12 @@ module.exports = {
     parseInt(process.env.PDF_CACHING_MIN_CHUNK_SIZE, 10) || 1024,
   pdfCachingMaxProcessingTime:
     parseInt(process.env.PDF_CACHING_MAX_PROCESSING_TIME, 10) || 10 * 1000,
+  pdfCachingEnableWorkerPool:
+    process.env.PDF_CACHING_ENABLE_WORKER_POOL === 'true',
+  pdfCachingWorkerPoolSize:
+    parseInt(process.env.PDF_CACHING_WORKER_POOL_SIZE, 10) || 4,
+  pdfCachingWorkerPoolBackLogLimit:
+    parseInt(process.env.PDF_CACHING_WORKER_POOL_BACK_LOG_LIMIT, 10) || 40,
 }
 
 if (process.env.ALLOWED_COMPILE_GROUPS) {

@@ -37,7 +37,7 @@ const BrandVariationsHandler = require('../BrandVariations/BrandVariationsHandle
 const UserController = require('../User/UserController')
 const AnalyticsManager = require('../Analytics/AnalyticsManager')
 const Modules = require('../../infrastructure/Modules')
-const SplitTestHandler = require('../SplitTests/SplitTestHandler')
+const SplitTestV2Handler = require('../SplitTests/SplitTestV2Handler')
 const { getNewLogsUIVariantForUser } = require('../Helpers/NewLogsUI')
 
 const _ssoAvailable = (affiliation, session, linkedInstitutionIds) => {
@@ -428,6 +428,10 @@ const ProjectController = {
               'allInReconfirmNotificationPeriodsForUser',
               fullEmails,
               (error, results) => {
+                if (error != null) {
+                  return cb(error)
+                }
+
                 // Module.hooks.fire accepts multiple methods
                 // and does async.series
                 const allInReconfirmNotificationPeriods =
@@ -710,38 +714,26 @@ const ProjectController = {
         flushToTpds: cb => {
           TpdsProjectFlusher.flushProjectToTpdsIfNeeded(projectId, cb)
         },
-        pdfCachingFeatureFlag(cb) {
-          if (!Settings.enablePdfCaching) return cb(null, '')
-          if (!userId) return cb(null, 'enable-caching-only')
-          SplitTestHandler.getTestSegmentation(
+        sharingModalSplitTest(cb) {
+          SplitTestV2Handler.assignInLocalsContext(
+            res,
             userId,
-            'pdf_caching_full',
-            (err, segmentation) => {
-              if (err) {
-                // Do not fail loading the editor.
-                return cb(null, '')
-              }
-              cb(null, (segmentation && segmentation.variant) || '')
+            'project-share-modal-paywall',
+            err => {
+              cb(err, null)
             }
           )
         },
       },
-      (err, results) => {
+      (err, { project, user, subscription, isTokenMember, brandVariation }) => {
         if (err != null) {
           OError.tag(err, 'error getting details for project page')
           return next(err)
         }
-        const { project } = results
-        const { user } = results
-        const { subscription } = results
-        const { brandVariation } = results
-        const { pdfCachingFeatureFlag } = results
-
         const anonRequestToken = TokenAccessHandler.getRequestToken(
           req,
           projectId
         )
-        const { isTokenMember } = results
         const allowedImageNames = ProjectHelper.getAllowedImagesForUser(
           sessionUser
         )
@@ -792,7 +784,7 @@ const ProjectController = {
             metrics.inc(metricName)
 
             if (userId) {
-              AnalyticsManager.recordEvent(userId, 'project-opened', {
+              AnalyticsManager.recordEventForUser(userId, 'project-opened', {
                 projectId: project._id,
               })
             }
@@ -812,15 +804,10 @@ const ProjectController = {
                 // The feature is disabled globally.
                 return false
               }
-              const canSeeFeaturePreview = pdfCachingFeatureFlag.includes(flag)
-              if (!canSeeFeaturePreview) {
-                // The user is not in the target group.
-                return false
-              }
-              // Optionally let the user opt-out.
-              // The will opt-out of both caching and metrics collection,
+              // Let the user opt-in only.
+              // The flag will opt-out of both caching and metrics collection,
               //  as if this editing session never happened.
-              return shouldDisplayFeature('enable_pdf_caching', true)
+              return shouldDisplayFeature('enable_pdf_caching', false)
             }
 
             res.render('project/editor', {
@@ -885,17 +872,16 @@ const ProjectController = {
                 'new_navigation_ui',
                 true
               ),
-              showNewFileViewUI: shouldDisplayFeature(
-                'new_file_view',
-                user.alphaProgram || user.betaProgram
-              ),
+              showNewPdfPreview: shouldDisplayFeature('new_pdf_preview', false),
               showSymbolPalette: shouldDisplayFeature(
                 'symbol_palette',
                 user.alphaProgram || user.betaProgram
               ),
               trackPdfDownload: partOfPdfCachingRollout('collect-metrics'),
               enablePdfCaching: partOfPdfCachingRollout('enable-caching'),
-              resetServiceWorker: Boolean(Settings.resetServiceWorker),
+              resetServiceWorker:
+                Boolean(Settings.resetServiceWorker) &&
+                !shouldDisplayFeature('enable_pdf_caching', false),
             })
             timer.done()
           }

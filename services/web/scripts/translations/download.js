@@ -1,3 +1,4 @@
+const path = require('path')
 const { promises: fs } = require('fs')
 const oneSky = require('@brainly/onesky-utils')
 const sanitizeHtml = require('sanitize-html')
@@ -35,7 +36,7 @@ async function run() {
       }
 
       await fs.writeFile(
-        `${__dirname}/../../locales/${code}.json`,
+        path.join(__dirname, `/../../locales/${code}.json`),
         JSON.stringify(lang.translation, null, 2) + '\n'
       )
     }
@@ -53,6 +54,12 @@ run()
  * @returns {string}
  */
 function sanitize(input) {
+  // Block Angular XSS
+  // Ticket: https://github.com/overleaf/issues/issues/4478
+  input = input.replace(/'/g, '’')
+  // Use left quote where (likely) appropriate.
+  input.replace(/ ’/g, ' ‘')
+
   return sanitizeHtml(input, {
     // Allow "replacement" tags (in the format <0>, <1>, <2>, etc) used by
     // react-i18next to allow for HTML insertion via the Trans component.

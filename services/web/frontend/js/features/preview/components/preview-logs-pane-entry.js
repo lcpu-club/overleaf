@@ -4,7 +4,7 @@ import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 import useExpandCollapse from '../../../shared/hooks/use-expand-collapse'
-import useResizeObserver from '../../../shared/hooks/use-resize-observer'
+import useResizeObserver from '../hooks/use-resize-observer'
 import Icon from '../../../shared/components/icon'
 
 function PreviewLogsPaneEntry({
@@ -224,7 +224,7 @@ function PreviewLogEntryContent({
       ) : null}
       {extraInfoURL ? (
         <div className="log-entry-content-link">
-          <a href={extraInfoURL} target="_blank">
+          <a href={extraInfoURL} target="_blank" rel="noopener">
             {t('log_hint_extra_info')}
           </a>
         </div>

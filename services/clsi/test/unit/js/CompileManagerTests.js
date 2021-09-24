@@ -1,161 +1,135 @@
-/* eslint-disable
-    camelcase,
-    chai-friendly/no-unused-expressions,
-    no-path-concat,
-    no-return-assign,
-    no-unused-vars,
-*/
-// TODO: This file was created by bulk-decaffeinate.
-// Fix any style issues and re-enable lint.
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 const SandboxedModule = require('sandboxed-module')
 const sinon = require('sinon')
 const modulePath = require('path').join(
   __dirname,
   '../../../app/js/CompileManager'
 )
-const tk = require('timekeeper')
 const { EventEmitter } = require('events')
-const Path = require('path')
 
 describe('CompileManager', function () {
   beforeEach(function () {
+    this.callback = sinon.stub()
+    this.projectId = 'project-id-123'
+    this.userId = '1234'
+    this.resources = 'mock-resources'
+    this.outputFiles = [
+      {
+        path: 'output.log',
+        type: 'log',
+      },
+      {
+        path: 'output.pdf',
+        type: 'pdf',
+      },
+    ]
+    this.buildFiles = [
+      {
+        path: 'output.log',
+        type: 'log',
+        build: 1234,
+      },
+      {
+        path: 'output.pdf',
+        type: 'pdf',
+        build: 1234,
+      },
+    ]
+    this.commandOutput = 'Dummy output'
+    this.compileBaseDir = '/compile/dir'
+    this.outputBaseDir = '/output/dir'
+    this.compileDir = `${this.compileBaseDir}/${this.projectId}-${this.userId}`
+    this.outputDir = `${this.outputBaseDir}/${this.projectId}-${this.userId}`
+
+    this.proc = new EventEmitter()
+    this.proc.stdout = new EventEmitter()
+    this.proc.stderr = new EventEmitter()
+    this.proc.stderr.setEncoding = sinon.stub().returns(this.proc.stderr)
+
+    this.LatexRunner = {
+      runLatex: sinon.stub().yields(),
+    }
+    this.ResourceWriter = {
+      syncResourcesToDisk: sinon.stub().yields(null, this.resources),
+    }
+    this.OutputFileFinder = {
+      findOutputFiles: sinon.stub().yields(null, this.outputFiles),
+    }
+    this.OutputCacheManager = {
+      saveOutputFiles: sinon.stub().yields(null, this.buildFiles),
+    }
+    this.Settings = {
+      path: {
+        compilesDir: this.compileBaseDir,
+        outputDir: this.outputBaseDir,
+        synctexBaseDir: sinon.stub(),
+      },
+      clsi: {
+        docker: {
+          image: 'SOMEIMAGE',
+        },
+      },
+    }
+    this.Settings.path.synctexBaseDir
+      .withArgs(`${this.projectId}-${this.userId}`)
+      .returns(this.compileDir)
+    this.child_process = {
+      exec: sinon.stub(),
+      spawn: sinon.stub().returns(this.proc),
+    }
+    this.CommandRunner = {
+      run: sinon.stub().yields(null, { stdout: this.commandOutput }),
+    }
+    this.DraftModeManager = {
+      injectDraftMode: sinon.stub().yields(),
+    }
+    this.TikzManager = {
+      checkMainFile: sinon.stub().yields(null, false),
+    }
+    this.LockManager = {
+      runWithLock: sinon.stub().callsFake((lockFile, runner, callback) => {
+        runner((err, ...result) => callback(err, ...result))
+      }),
+    }
+    this.SynctexOutputParser = {
+      parseViewOutput: sinon.stub(),
+      parseEditOutput: sinon.stub(),
+    }
+
+    this.fs = {
+      lstat: sinon.stub(),
+      stat: sinon.stub(),
+      readFile: sinon.stub(),
+    }
+    this.fse = {
+      ensureDir: sinon.stub().yields(),
+    }
+
     this.CompileManager = SandboxedModule.require(modulePath, {
       requires: {
-        './LatexRunner': (this.LatexRunner = {}),
-        './ResourceWriter': (this.ResourceWriter = {}),
-        './OutputFileFinder': (this.OutputFileFinder = {}),
-        './OutputCacheManager': (this.OutputCacheManager = {}),
-        '@overleaf/settings': (this.Settings = {
-          path: {
-            compilesDir: '/compiles/dir',
-            outputDir: '/output/dir',
-          },
-          synctexBaseDir() {
-            return '/compile'
-          },
-          clsi: {
-            docker: {
-              image: 'SOMEIMAGE',
-            },
-          },
-        }),
-
-        child_process: (this.child_process = {}),
-        './CommandRunner': (this.CommandRunner = {}),
-        './DraftModeManager': (this.DraftModeManager = {}),
-        './TikzManager': (this.TikzManager = {}),
-        './LockManager': (this.LockManager = {}),
-        fs: (this.fs = {}),
-        'fs-extra': (this.fse = { ensureDir: sinon.stub().callsArg(1) }),
+        './LatexRunner': this.LatexRunner,
+        './ResourceWriter': this.ResourceWriter,
+        './OutputFileFinder': this.OutputFileFinder,
+        './OutputCacheManager': this.OutputCacheManager,
+        '@overleaf/settings': this.Settings,
+        child_process: this.child_process,
+        './CommandRunner': this.CommandRunner,
+        './DraftModeManager': this.DraftModeManager,
+        './TikzManager': this.TikzManager,
+        './LockManager': this.LockManager,
+        './SynctexOutputParser': this.SynctexOutputParser,
+        fs: this.fs,
+        'fs-extra': this.fse,
       },
     })
-    this.callback = sinon.stub()
-    this.project_id = 'project-id-123'
-    return (this.user_id = '1234')
   })
+
   describe('doCompileWithLock', function () {
     beforeEach(function () {
       this.request = {
-        resources: (this.resources = 'mock-resources'),
-        project_id: this.project_id,
-        user_id: this.user_id,
-      }
-      this.output_files = ['foo', 'bar']
-      this.Settings.compileDir = 'compiles'
-      this.compileDir = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`
-      this.CompileManager.doCompile = sinon
-        .stub()
-        .yields(null, this.output_files)
-      return (this.LockManager.runWithLock = (lockFile, runner, callback) =>
-        runner((err, ...result) => callback(err, ...Array.from(result))))
-    })
-
-    describe('when the project is not locked', function () {
-      beforeEach(function () {
-        return this.CompileManager.doCompileWithLock(
-          this.request,
-          this.callback
-        )
-      })
-
-      it('should ensure that the compile directory exists', function () {
-        return this.fse.ensureDir.calledWith(this.compileDir).should.equal(true)
-      })
-
-      it('should call doCompile with the request', function () {
-        return this.CompileManager.doCompile
-          .calledWith(this.request)
-          .should.equal(true)
-      })
-
-      return it('should call the callback with the output files', function () {
-        return this.callback
-          .calledWithExactly(null, this.output_files)
-          .should.equal(true)
-      })
-    })
-
-    return describe('when the project is locked', function () {
-      beforeEach(function () {
-        this.error = new Error('locked')
-        this.LockManager.runWithLock = (lockFile, runner, callback) => {
-          return callback(this.error)
-        }
-        return this.CompileManager.doCompileWithLock(
-          this.request,
-          this.callback
-        )
-      })
-
-      it('should ensure that the compile directory exists', function () {
-        return this.fse.ensureDir.calledWith(this.compileDir).should.equal(true)
-      })
-
-      it('should not call doCompile with the request', function () {
-        return this.CompileManager.doCompile.called.should.equal(false)
-      })
-
-      return it('should call the callback with the error', function () {
-        return this.callback.calledWithExactly(this.error).should.equal(true)
-      })
-    })
-  })
-
-  describe('doCompile', function () {
-    beforeEach(function () {
-      this.output_files = [
-        {
-          path: 'output.log',
-          type: 'log',
-        },
-        {
-          path: 'output.pdf',
-          type: 'pdf',
-        },
-      ]
-      this.build_files = [
-        {
-          path: 'output.log',
-          type: 'log',
-          build: 1234,
-        },
-        {
-          path: 'output.pdf',
-          type: 'pdf',
-          build: 1234,
-        },
-      ]
-      this.request = {
-        resources: (this.resources = 'mock-resources'),
+        resources: this.resources,
         rootResourcePath: (this.rootResourcePath = 'main.tex'),
-        project_id: this.project_id,
-        user_id: this.user_id,
+        project_id: this.projectId,
+        user_id: this.userId,
         compiler: (this.compiler = 'pdflatex'),
         timeout: (this.timeout = 42000),
         imageName: (this.image = 'example.com/image'),
@@ -163,37 +137,48 @@ describe('CompileManager', function () {
         compileGroup: (this.compileGroup = 'compile-group'),
       }
       this.env = {}
-      this.Settings.compileDir = 'compiles'
-      this.compileDir = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`
-      this.outputDir = `${this.Settings.path.outputDir}/${this.project_id}-${this.user_id}`
-      this.ResourceWriter.syncResourcesToDisk = sinon
-        .stub()
-        .callsArgWith(2, null, this.resources)
-      this.LatexRunner.runLatex = sinon.stub().callsArg(2)
-      this.OutputFileFinder.findOutputFiles = sinon
-        .stub()
-        .yields(null, this.output_files)
-      this.OutputCacheManager.saveOutputFiles = sinon
-        .stub()
-        .yields(null, this.build_files)
-      this.DraftModeManager.injectDraftMode = sinon.stub().callsArg(1)
-      return (this.TikzManager.checkMainFile = sinon.stub().callsArg(3, false))
+    })
+
+    describe('when the project is locked', function () {
+      beforeEach(function () {
+        this.error = new Error('locked')
+        this.LockManager.runWithLock.callsFake((lockFile, runner, callback) => {
+          callback(this.error)
+        })
+        this.CompileManager.doCompileWithLock(this.request, this.callback)
+      })
+
+      it('should ensure that the compile directory exists', function () {
+        this.fse.ensureDir.calledWith(this.compileDir).should.equal(true)
+      })
+
+      it('should not run LaTeX', function () {
+        this.LatexRunner.runLatex.called.should.equal(false)
+      })
+
+      it('should call the callback with the error', function () {
+        this.callback.calledWithExactly(this.error).should.equal(true)
+      })
     })
 
     describe('normally', function () {
       beforeEach(function () {
-        return this.CompileManager.doCompile(this.request, this.callback)
+        this.CompileManager.doCompileWithLock(this.request, this.callback)
+      })
+
+      it('should ensure that the compile directory exists', function () {
+        this.fse.ensureDir.calledWith(this.compileDir).should.equal(true)
       })
 
       it('should write the resources to disk', function () {
-        return this.ResourceWriter.syncResourcesToDisk
+        this.ResourceWriter.syncResourcesToDisk
           .calledWith(this.request, this.compileDir)
           .should.equal(true)
       })
 
       it('should run LaTeX', function () {
-        return this.LatexRunner.runLatex
-          .calledWith(`${this.project_id}-${this.user_id}`, {
+        this.LatexRunner.runLatex
+          .calledWith(`${this.projectId}-${this.userId}`, {
             directory: this.compileDir,
             mainFile: this.rootResourcePath,
             compiler: this.compiler,
@@ -207,30 +192,28 @@ describe('CompileManager', function () {
       })
 
       it('should find the output files', function () {
-        return this.OutputFileFinder.findOutputFiles
+        this.OutputFileFinder.findOutputFiles
           .calledWith(this.resources, this.compileDir)
           .should.equal(true)
       })
 
       it('should return the output files', function () {
-        return this.callback
-          .calledWith(null, this.build_files)
-          .should.equal(true)
+        this.callback.calledWith(null, this.buildFiles).should.equal(true)
       })
 
-      return it('should not inject draft mode by default', function () {
-        return this.DraftModeManager.injectDraftMode.called.should.equal(false)
+      it('should not inject draft mode by default', function () {
+        this.DraftModeManager.injectDraftMode.called.should.equal(false)
       })
     })
 
     describe('with draft mode', function () {
       beforeEach(function () {
         this.request.draft = true
-        return this.CompileManager.doCompile(this.request, this.callback)
+        this.CompileManager.doCompileWithLock(this.request, this.callback)
       })
 
-      return it('should inject the draft mode header', function () {
-        return this.DraftModeManager.injectDraftMode
+      it('should inject the draft mode header', function () {
+        this.DraftModeManager.injectDraftMode
           .calledWith(this.compileDir + '/' + this.rootResourcePath)
           .should.equal(true)
       })
@@ -239,12 +222,12 @@ describe('CompileManager', function () {
     describe('with a check option', function () {
       beforeEach(function () {
         this.request.check = 'error'
-        return this.CompileManager.doCompile(this.request, this.callback)
+        this.CompileManager.doCompileWithLock(this.request, this.callback)
       })
 
-      return it('should run chktex', function () {
-        return this.LatexRunner.runLatex
-          .calledWith(`${this.project_id}-${this.user_id}`, {
+      it('should run chktex', function () {
+        this.LatexRunner.runLatex
+          .calledWith(`${this.projectId}-${this.userId}`, {
             directory: this.compileDir,
             mainFile: this.rootResourcePath,
             compiler: this.compiler,
@@ -262,16 +245,16 @@ describe('CompileManager', function () {
       })
     })
 
-    return describe('with a knitr file and check options', function () {
+    describe('with a knitr file and check options', function () {
       beforeEach(function () {
         this.request.rootResourcePath = 'main.Rtex'
         this.request.check = 'error'
-        return this.CompileManager.doCompile(this.request, this.callback)
+        this.CompileManager.doCompileWithLock(this.request, this.callback)
       })
 
-      return it('should not run chktex', function () {
-        return this.LatexRunner.runLatex
-          .calledWith(`${this.project_id}-${this.user_id}`, {
+      it('should not run chktex', function () {
+        this.LatexRunner.runLatex
+          .calledWith(`${this.projectId}-${this.userId}`, {
             directory: this.compileDir,
             mainFile: 'main.Rtex',
             compiler: this.compiler,
@@ -290,72 +273,50 @@ describe('CompileManager', function () {
     describe('succesfully', function () {
       beforeEach(function () {
         this.Settings.compileDir = 'compiles'
-        this.fs.lstat = sinon.stub().callsArgWith(1, null, {
+        this.fs.lstat.yields(null, {
           isDirectory() {
             return true
           },
         })
-        this.proc = new EventEmitter()
-        this.proc.stdout = new EventEmitter()
-        this.proc.stderr = new EventEmitter()
-        this.proc.stderr.setEncoding = sinon.stub().returns(this.proc.stderr)
-        this.child_process.spawn = sinon.stub().returns(this.proc)
         this.CompileManager.clearProject(
-          this.project_id,
-          this.user_id,
+          this.projectId,
+          this.userId,
           this.callback
         )
-        return this.proc.emit('close', 0)
+        this.proc.emit('close', 0)
       })
 
       it('should remove the project directory', function () {
-        return this.child_process.spawn
-          .calledWith('rm', [
-            '-r',
-            '-f',
-            '--',
-            `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`,
-            `${this.Settings.path.outputDir}/${this.project_id}-${this.user_id}`,
-          ])
+        this.child_process.spawn
+          .calledWith('rm', ['-r', '-f', '--', this.compileDir, this.outputDir])
           .should.equal(true)
       })
 
-      return it('should call the callback', function () {
-        return this.callback.called.should.equal(true)
+      it('should call the callback', function () {
+        this.callback.called.should.equal(true)
       })
     })
 
-    return describe('with a non-success status code', function () {
+    describe('with a non-success status code', function () {
       beforeEach(function () {
         this.Settings.compileDir = 'compiles'
-        this.fs.lstat = sinon.stub().callsArgWith(1, null, {
+        this.fs.lstat.yields(null, {
           isDirectory() {
             return true
           },
         })
-        this.proc = new EventEmitter()
-        this.proc.stdout = new EventEmitter()
-        this.proc.stderr = new EventEmitter()
-        this.proc.stderr.setEncoding = sinon.stub().returns(this.proc.stderr)
-        this.child_process.spawn = sinon.stub().returns(this.proc)
         this.CompileManager.clearProject(
-          this.project_id,
-          this.user_id,
+          this.projectId,
+          this.userId,
           this.callback
         )
         this.proc.stderr.emit('data', (this.error = 'oops'))
-        return this.proc.emit('close', 1)
+        this.proc.emit('close', 1)
       })
 
       it('should remove the project directory', function () {
-        return this.child_process.spawn
-          .calledWith('rm', [
-            '-r',
-            '-f',
-            '--',
-            `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`,
-            `${this.Settings.path.outputDir}/${this.project_id}-${this.user_id}`,
-          ])
+        this.child_process.spawn
+          .calledWith('rm', ['-r', '-f', '--', this.compileDir, this.outputDir])
           .should.equal(true)
       })
 
@@ -363,7 +324,7 @@ describe('CompileManager', function () {
         this.callback.calledWithExactly(sinon.match(Error)).should.equal(true)
 
         this.callback.args[0][0].message.should.equal(
-          `rm -r ${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id} ${this.Settings.path.outputDir}/${this.project_id}-${this.user_id} failed: ${this.error}`
+          `rm -r ${this.compileDir} ${this.outputDir} failed: ${this.error}`
         )
       })
     })
@@ -378,27 +339,24 @@ describe('CompileManager', function () {
       this.height = 234.56
       this.line = 5
       this.column = 3
-      this.file_name = 'main.tex'
-      this.child_process.execFile = sinon.stub()
-      return (this.Settings.path.synctexBaseDir = project_id =>
-        `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`)
+      this.filename = 'main.tex'
     })
 
     describe('syncFromCode', function () {
       beforeEach(function () {
-        this.fs.stat = sinon.stub().callsArgWith(1, null, {
+        this.fs.stat.yields(null, {
           isFile() {
             return true
           },
         })
-        this.stdout = `NODE\t${this.page}\t${this.h}\t${this.v}\t${this.width}\t${this.height}\n`
-        this.CommandRunner.run = sinon
-          .stub()
-          .yields(null, { stdout: this.stdout })
-        return this.CompileManager.syncFromCode(
-          this.project_id,
-          this.user_id,
-          this.file_name,
+        this.records = [{ page: 1, h: 2, v: 3, width: 4, height: 5 }]
+        this.SynctexOutputParser.parseViewOutput
+          .withArgs(this.commandOutput)
+          .returns(this.records)
+        this.CompileManager.syncFromCode(
+          this.projectId,
+          this.userId,
+          this.filename,
           this.line,
           this.column,
           '',
@@ -407,40 +365,30 @@ describe('CompileManager', function () {
       })
 
       it('should execute the synctex binary', function () {
-        const bin_path = Path.resolve(__dirname + '/../../../bin/synctex')
-        const synctex_path = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}/output.pdf`
-        const file_path = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}/${this.file_name}`
-        return this.CommandRunner.run
-          .calledWith(
-            `${this.project_id}-${this.user_id}`,
-            [
-              '/opt/synctex',
-              'code',
-              synctex_path,
-              file_path,
-              this.line,
-              this.column,
-            ],
-            `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`,
-            this.Settings.clsi.docker.image,
-            60000,
-            {}
-          )
-          .should.equal(true)
+        const outputFilePath = `${this.compileDir}/output.pdf`
+        const inputFilePath = `${this.compileDir}/${this.filename}`
+        this.CommandRunner.run.should.have.been.calledWith(
+          `${this.projectId}-${this.userId}`,
+          [
+            'synctex',
+            'view',
+            '-i',
+            `${this.line}:${this.column}:${inputFilePath}`,
+            '-o',
+            outputFilePath,
+          ],
+          this.compileDir,
+          this.Settings.clsi.docker.image,
+          60000,
+          {}
+        )
       })
 
       it('should call the callback with the parsed output', function () {
-        return this.callback
-          .calledWith(null, [
-            {
-              page: this.page,
-              h: this.h,
-              v: this.v,
-              height: this.height,
-              width: this.width,
-            },
-          ])
-          .should.equal(true)
+        this.callback.should.have.been.calledWith(
+          null,
+          sinon.match.array.deepEquals(this.records)
+        )
       })
 
       describe('with a custom imageName', function () {
@@ -448,9 +396,9 @@ describe('CompileManager', function () {
         beforeEach(function () {
           this.CommandRunner.run.reset()
           this.CompileManager.syncFromCode(
-            this.project_id,
-            this.user_id,
-            this.file_name,
+            this.projectId,
+            this.userId,
+            this.filename,
             this.line,
             this.column,
             customImageName,
@@ -459,43 +407,41 @@ describe('CompileManager', function () {
         })
 
         it('should execute the synctex binary in a custom docker image', function () {
-          const synctex_path = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}/output.pdf`
-          const file_path = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}/${this.file_name}`
-          this.CommandRunner.run
-            .calledWith(
-              `${this.project_id}-${this.user_id}`,
-              [
-                '/opt/synctex',
-                'code',
-                synctex_path,
-                file_path,
-                this.line,
-                this.column,
-              ],
-              `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`,
-              customImageName,
-              60000,
-              {}
-            )
-            .should.equal(true)
+          const outputFilePath = `${this.compileDir}/output.pdf`
+          const inputFilePath = `${this.compileDir}/${this.filename}`
+          this.CommandRunner.run.should.have.been.calledWith(
+            `${this.projectId}-${this.userId}`,
+            [
+              'synctex',
+              'view',
+              '-i',
+              `${this.line}:${this.column}:${inputFilePath}`,
+              '-o',
+              outputFilePath,
+            ],
+            this.compileDir,
+            customImageName,
+            60000,
+            {}
+          )
         })
       })
     })
 
-    return describe('syncFromPdf', function () {
+    describe('syncFromPdf', function () {
       beforeEach(function () {
-        this.fs.stat = sinon.stub().callsArgWith(1, null, {
+        this.fs.stat.yields(null, {
           isFile() {
             return true
           },
         })
-        this.stdout = `NODE\t${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}/${this.file_name}\t${this.line}\t${this.column}\n`
-        this.CommandRunner.run = sinon
-          .stub()
-          .callsArgWith(7, null, { stdout: this.stdout })
-        return this.CompileManager.syncFromPdf(
-          this.project_id,
-          this.user_id,
+        this.records = [{ file: 'main.tex', line: 1, column: 1 }]
+        this.SynctexOutputParser.parseEditOutput
+          .withArgs(this.commandOutput, this.compileDir)
+          .returns(this.records)
+        this.CompileManager.syncFromPdf(
+          this.projectId,
+          this.userId,
           this.page,
           this.h,
           this.v,
@@ -505,30 +451,27 @@ describe('CompileManager', function () {
       })
 
       it('should execute the synctex binary', function () {
-        const bin_path = Path.resolve(__dirname + '/../../../bin/synctex')
-        const synctex_path = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}/output.pdf`
-        return this.CommandRunner.run
-          .calledWith(
-            `${this.project_id}-${this.user_id}`,
-            ['/opt/synctex', 'pdf', synctex_path, this.page, this.h, this.v],
-            `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`,
-            this.Settings.clsi.docker.image,
-            60000,
-            {}
-          )
-          .should.equal(true)
+        const outputFilePath = `${this.compileDir}/output.pdf`
+        this.CommandRunner.run.should.have.been.calledWith(
+          `${this.projectId}-${this.userId}`,
+          [
+            'synctex',
+            'edit',
+            '-o',
+            `${this.page}:${this.h}:${this.v}:${outputFilePath}`,
+          ],
+          this.compileDir,
+          this.Settings.clsi.docker.image,
+          60000,
+          {}
+        )
       })
 
       it('should call the callback with the parsed output', function () {
-        return this.callback
-          .calledWith(null, [
-            {
-              file: this.file_name,
-              line: this.line,
-              column: this.column,
-            },
-          ])
-          .should.equal(true)
+        this.callback.should.have.been.calledWith(
+          null,
+          sinon.match.array.deepEquals(this.records)
+        )
       })
 
       describe('with a custom imageName', function () {
@@ -536,8 +479,8 @@ describe('CompileManager', function () {
         beforeEach(function () {
           this.CommandRunner.run.reset()
           this.CompileManager.syncFromPdf(
-            this.project_id,
-            this.user_id,
+            this.projectId,
+            this.userId,
             this.page,
             this.h,
             this.v,
@@ -547,12 +490,17 @@ describe('CompileManager', function () {
         })
 
         it('should execute the synctex binary in a custom docker image', function () {
-          const synctex_path = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}/output.pdf`
+          const outputFilePath = `${this.compileDir}/output.pdf`
           this.CommandRunner.run
             .calledWith(
-              `${this.project_id}-${this.user_id}`,
-              ['/opt/synctex', 'pdf', synctex_path, this.page, this.h, this.v],
-              `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`,
+              `${this.projectId}-${this.userId}`,
+              [
+                'synctex',
+                'edit',
+                '-o',
+                `${this.page}:${this.h}:${this.v}:${outputFilePath}`,
+              ],
+              this.compileDir,
               customImageName,
               60000,
               {}
@@ -563,49 +511,39 @@ describe('CompileManager', function () {
     })
   })
 
-  return describe('wordcount', function () {
+  describe('wordcount', function () {
     beforeEach(function () {
-      this.CommandRunner.run = sinon.stub().callsArg(7)
-      this.fs.readFile = sinon
-        .stub()
-        .callsArgWith(
-          2,
-          null,
-          (this.stdout = 'Encoding: ascii\nWords in text: 2')
-        )
-      this.callback = sinon.stub()
+      this.stdout = 'Encoding: ascii\nWords in text: 2'
+      this.fs.readFile.yields(null, this.stdout)
 
-      this.project_id
       this.timeout = 60 * 1000
-      this.file_name = 'main.tex'
-      this.Settings.path.compilesDir = '/local/compile/directory'
+      this.filename = 'main.tex'
       this.image = 'example.com/image'
 
-      return this.CompileManager.wordcount(
-        this.project_id,
-        this.user_id,
-        this.file_name,
+      this.CompileManager.wordcount(
+        this.projectId,
+        this.userId,
+        this.filename,
         this.image,
         this.callback
       )
     })
 
     it('should run the texcount command', function () {
-      this.directory = `${this.Settings.path.compilesDir}/${this.project_id}-${this.user_id}`
-      this.file_path = `$COMPILE_DIR/${this.file_name}`
+      this.filePath = `$COMPILE_DIR/${this.filename}`
       this.command = [
         'texcount',
         '-nocol',
         '-inc',
-        this.file_path,
-        `-out=${this.file_path}.wc`,
+        this.filePath,
+        `-out=${this.filePath}.wc`,
       ]
 
-      return this.CommandRunner.run
+      this.CommandRunner.run
         .calledWith(
-          `${this.project_id}-${this.user_id}`,
+          `${this.projectId}-${this.userId}`,
           this.command,
-          this.directory,
+          this.compileDir,
           this.image,
           this.timeout,
           {}
@@ -613,8 +551,8 @@ describe('CompileManager', function () {
         .should.equal(true)
     })
 
-    return it('should call the callback with the parsed output', function () {
-      return this.callback
+    it('should call the callback with the parsed output', function () {
+      this.callback
         .calledWith(null, {
           encode: 'ascii',
           textWords: 2,

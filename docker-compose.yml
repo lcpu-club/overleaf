@@ -34,7 +34,7 @@ services:
             SHARELATEX_REDIS_HOST: redis
             REDIS_HOST: redis
 
-            ENABLED_LINKED_FILE_TYPES: 'url,project_file'
+            ENABLED_LINKED_FILE_TYPES: 'project_file,project_output_file'
 
             # Enables Thumbnail generation using ImageMagick
             ENABLE_CONVERSIONS: 'true'
@@ -81,7 +81,6 @@ services:
 
             # SANDBOXED_COMPILES_SIBLING_CONTAINERS: 'true'
             # SANDBOXED_COMPILES_HOST_DIR: '/var/sharelatex_data/data/compiles'
-            # SYNCTEX_BIN_HOST_PATH: '/var/sharelatex_data/bin/synctex'
 
             # DOCKER_RUNNER: 'false'
 

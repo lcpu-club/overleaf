@@ -45,7 +45,7 @@ block content
 							span.sr-only Amex accepted
 							i.fa.fa-cc-paypal.fa-2x(aria-hidden="true") &nbsp;
 							span.sr-only Paypal accepted
-							div.text-centered #{translate('change_plans_any_time')}<br/> #{translate('billed_after_x_days', {len:'{{trial_len}}'})}
+							div.text-centered #{translate('change_plans_any_time')}<br/> #{translate('billed_after_x_days', {len:'7'})}
 							br
 							div.text-centered #{translate('subject_to_additional_vat')}<br/> #{translate('select_country_vat')}
 
@@ -71,7 +71,7 @@ block content
 							+plan_switch('table')
 						.col-md-3.text-right
 							+currency_dropdown
-					.row(event-tracking="features-table-viewed" event-tracking-ga="subscription-funnel" event-tracking-trigger="scroll" event-tracking-send-once="true" event-tracking-label=`exp-{{plansVariant}}`)
+					.row(event-tracking="features-table-viewed" event-tracking-ga="subscription-funnel" event-tracking-trigger="scroll" event-tracking-send-once="true" event-tracking-label="exp-")
 						.col-sm-12(ng-if="ui.view != 'student'")
 							+table_premium
 						.col-sm-12(ng-if="ui.view == 'student'")

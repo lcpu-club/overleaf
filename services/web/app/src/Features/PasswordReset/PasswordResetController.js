@@ -12,7 +12,11 @@ async function setNewUserPassword(req, res, next) {
   let user
   let { passwordResetToken, password } = req.body
   if (!passwordResetToken || !password) {
-    return res.sendStatus(400)
+    return res.status(400).json({
+      message: {
+        key: 'invalid-password',
+      },
+    })
   }
   passwordResetToken = passwordResetToken.trim()
   delete req.session.resetToken
@@ -31,8 +35,18 @@ async function setNewUserPassword(req, res, next) {
       auditLog
     )
     const { found, reset, userId } = result
-    if (!found) return res.sendStatus(404)
-    if (!reset) return res.sendStatus(500)
+    if (!found) {
+      return res.status(404).json({
+        message: {
+          key: 'token-expired',
+        },
+      })
+    }
+    if (!reset) {
+      return res.status(500).json({
+        message: req.i18n.translate('error_performing_request'),
+      })
+    }
     await UserSessionsManager.promises.revokeAllUserSessions(
       { _id: userId },
       []
@@ -44,11 +58,21 @@ async function setNewUserPassword(req, res, next) {
     user = await UserGetter.promises.getUser(userId)
   } catch (error) {
     if (error.name === 'NotFoundError') {
-      return res.sendStatus(404)
+      return res.status(404).json({
+        message: {
+          key: 'token-expired',
+        },
+      })
     } else if (error.name === 'InvalidPasswordError') {
-      return res.sendStatus(400)
+      return res.status(400).json({
+        message: {
+          key: 'invalid-password',
+        },
+      })
     } else {
-      return res.sendStatus(500)
+      return res.status(500).json({
+        message: req.i18n.translate('error_performing_request'),
+      })
     }
   }
 
@@ -63,7 +87,7 @@ module.exports = {
   requestReset(req, res, next) {
     const email = EmailsHelper.parseEmail(req.body.email)
     if (!email) {
-      return res.status(400).send({
+      return res.status(400).json({
         message: req.i18n.translate('must_be_email_address'),
       })
     }
@@ -74,15 +98,15 @@ module.exports = {
         })
         next(err)
       } else if (status === 'primary') {
-        res.status(200).send({
-          message: { text: req.i18n.translate('password_reset_email_sent') },
+        res.status(200).json({
+          message: req.i18n.translate('password_reset_email_sent'),
         })
       } else if (status === 'secondary') {
-        res.status(404).send({
+        res.status(404).json({
           message: req.i18n.translate('secondary_email_password_reset'),
         })
       } else {
-        res.status(404).send({
+        res.status(404).json({
           message: req.i18n.translate('cant_find_email'),
         })
       }

@@ -989,7 +989,7 @@
   "need_to_upgrade_for_history": "Vous devez mettre à niveau votre compte pour pouvoir utiliser l’historique",
   "ask_proj_owner_to_upgrade_for_history": "Veuillez demander au propriétaire du projet de mettre à niveau son compte pour pouvoir utiliser l’historique.",
   "anonymous": "Anonyme",
-  "generic_something_went_wrong": "Désolé, quelque chose s'est mal passé :(",
+  "generic_something_went_wrong": "Désolé, quelque chose s’est mal passé :(",
   "generic_if_problem_continues_contact_us": "Si ce problème persiste, veuillez nous contacter",
   "restoring": "Restauration en cours",
   "restore_to_before_these_changes": "Restaurer juste avant ces modifications",
@@ -1482,5 +1482,6 @@
   "go_page": "Aller à la page __page__",
   "pagination_navigation": "Navigation pagination",
   "can_now_relink_dropbox": "Vous pouvez désormais <0>reconnecter votre compte Dropbox</0>.",
-  "skip_to_content": "Aller au contenu"
+  "skip_to_content": "Aller au contenu",
+  "logging_out": "Déconnexion de"
 }

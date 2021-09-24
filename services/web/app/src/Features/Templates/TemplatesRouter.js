@@ -8,22 +8,26 @@ module.exports = {
   apply(app) {
     app.get(
       '/project/new/template/:Template_version_id',
+      (req, res, next) =>
+        AnalyticsRegistrationSourceMiddleware.setSource(
+          'template',
+          req.params.Template_version_id
+        )(req, res, next),
       TemplatesMiddleware.saveTemplateDataInSession,
       AuthenticationController.requireLogin(),
-      TemplatesController.getV1Template
+      TemplatesController.getV1Template,
+      AnalyticsRegistrationSourceMiddleware.clearSource()
     )
 
     app.post(
       '/project/new/template',
-      AnalyticsRegistrationSourceMiddleware.setSource('template'),
       AuthenticationController.requireLogin(),
       RateLimiterMiddleware.rateLimit({
         endpointName: 'create-project-from-template',
         maxRequests: 20,
         timeInterval: 60,
       }),
-      TemplatesController.createProjectFromV1Template,
-      AnalyticsRegistrationSourceMiddleware.clearSource()
+      TemplatesController.createProjectFromV1Template
     )
   },
 }

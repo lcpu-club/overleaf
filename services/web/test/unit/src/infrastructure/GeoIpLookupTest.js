@@ -41,6 +41,18 @@ describe('GeoIpLookup', function () {
     }
   })
 
+  describe('isValidCurrencyParam', function () {
+    it('should reject invalid currency codes', function () {
+      expect(this.GeoIpLookup.isValidCurrencyParam('GBP')).to.equal(true)
+      expect(this.GeoIpLookup.isValidCurrencyParam('USD')).to.equal(true)
+      expect(this.GeoIpLookup.isValidCurrencyParam('AUD')).to.equal(true)
+      expect(this.GeoIpLookup.isValidCurrencyParam('EUR')).to.equal(true)
+      expect(this.GeoIpLookup.isValidCurrencyParam('WAT')).to.equal(false)
+      expect(this.GeoIpLookup.isValidCurrencyParam('NON')).to.equal(false)
+      expect(this.GeoIpLookup.isValidCurrencyParam('LOL')).to.equal(false)
+    })
+  })
+
   describe('getDetails', function () {
     beforeEach(function () {
       this.request.get.callsArgWith(1, null, null, this.stubbedResponse)
@@ -49,6 +61,7 @@ describe('GeoIpLookup', function () {
     describe('callback', function () {
       it('should request the details using the ip', function (done) {
         this.GeoIpLookup.getDetails(this.ipAddress, err => {
+          assert.equal(err, null)
           this.request.get
             .calledWith({
               url: this.settings.apis.geoIpLookup.url + '/' + this.ipAddress,
@@ -62,6 +75,7 @@ describe('GeoIpLookup', function () {
 
       it('should return the ip details', function (done) {
         this.GeoIpLookup.getDetails(this.ipAddress, (err, returnedDetails) => {
+          assert.equal(err, null)
           assert.deepEqual(returnedDetails, this.stubbedResponse)
           done()
         })
@@ -71,6 +85,7 @@ describe('GeoIpLookup', function () {
         this.GeoIpLookup.getDetails(
           ` ${this.ipAddress} 123.123.123.123 234.234.234.234`,
           err => {
+            assert.equal(err, null)
             this.request.get
               .calledWith({
                 url: this.settings.apis.geoIpLookup.url + '/' + this.ipAddress,
@@ -125,6 +140,7 @@ describe('GeoIpLookup', function () {
         this.GeoIpLookup.getCurrencyCode(
           this.ipAddress,
           (err, currencyCode) => {
+            assert.equal(err, null)
             currencyCode.should.equal('GBP')
             done()
           }
@@ -137,6 +153,7 @@ describe('GeoIpLookup', function () {
         this.GeoIpLookup.getCurrencyCode(
           this.ipAddress,
           (err, currencyCode) => {
+            assert.equal(err, null)
             currencyCode.should.equal('GBP')
             done()
           }
@@ -149,6 +166,7 @@ describe('GeoIpLookup', function () {
         this.GeoIpLookup.getCurrencyCode(
           this.ipAddress,
           (err, currencyCode) => {
+            assert.equal(err, null)
             currencyCode.should.equal('USD')
             done()
           }
@@ -161,6 +179,7 @@ describe('GeoIpLookup', function () {
         this.GeoIpLookup.getCurrencyCode(
           this.ipAddress,
           (err, currencyCode) => {
+            assert.equal(err, null)
             currencyCode.should.equal('EUR')
             done()
           }
@@ -172,6 +191,7 @@ describe('GeoIpLookup', function () {
         this.GeoIpLookup.getCurrencyCode(
           this.ipAddress,
           (err, currencyCode) => {
+            assert.equal(err, null)
             currencyCode.should.equal('USD')
             done()
           }
@@ -183,6 +203,7 @@ describe('GeoIpLookup', function () {
         this.GeoIpLookup.getCurrencyCode(
           this.ipAddress,
           (err, currencyCode) => {
+            assert.equal(err, null)
             currencyCode.should.equal('USD')
             done()
           }
@@ -195,6 +216,7 @@ describe('GeoIpLookup', function () {
         this.GeoIpLookup.getCurrencyCode(
           this.ipAddress,
           (err, currencyCode) => {
+            assert.equal(err, null)
             currencyCode.should.equal('USD')
             done()
           }

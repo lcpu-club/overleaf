@@ -24,6 +24,7 @@ describe('UserController', function () {
           _id: this.user_id,
           email: 'old@something.com',
         },
+        analyticsId: this.user_id,
       },
       sessionID: '123',
       body: {},
@@ -32,6 +33,7 @@ describe('UserController', function () {
       },
       ip: '0:0:0:0',
       query: {},
+      headers: {},
     }
 
     this.UserDeleter = { deleteUser: sinon.stub().yields() }
@@ -90,6 +92,7 @@ describe('UserController', function () {
       .withArgs('https://evil.com')
       .returns(undefined)
     this.UrlHelper.getSafeRedirectPath.returnsArg(0)
+    this.acceptsJson = sinon.stub().returns(false)
 
     this.UserController = SandboxedModule.require(modulePath, {
       requires: {
@@ -126,6 +129,9 @@ describe('UserController', function () {
           sendEmail: sinon.stub(),
           promises: { sendEmail: sinon.stub().resolves() },
         }),
+        '../../infrastructure/RequestContentTypeDetection': {
+          acceptsJson: this.acceptsJson,
+        },
       },
     })
 
@@ -479,6 +485,10 @@ describe('UserController', function () {
   })
 
   describe('logout', function () {
+    beforeEach(function () {
+      this.acceptsJson.returns(false)
+    })
+
     it('should destroy the session', function (done) {
       this.req.session.destroy = sinon.stub().callsArgWith(0)
       this.res.redirect = url => {
@@ -532,6 +542,20 @@ describe('UserController', function () {
       }
       this.UserController.logout(this.req, this.res)
     })
+
+    it('should send json with redir property for json request', function (done) {
+      this.acceptsJson.returns(true)
+      this.req.session.destroy = sinon.stub().callsArgWith(0)
+      this.res.status = code => {
+        code.should.equal(200)
+        return this.res
+      }
+      this.res.json = data => {
+        data.redir.should.equal('/login')
+        done()
+      }
+      this.UserController.logout(this.req, this.res)
+    })
   })
 
   describe('register', function () {
@@ -544,9 +568,10 @@ describe('UserController', function () {
     })
 
     it('should register the user and send them an email', function () {
-      this.UserRegistrationHandler.registerNewUserAndSendActivationEmail
-        .calledWith(this.email)
-        .should.equal(true)
+      sinon.assert.calledWith(
+        this.UserRegistrationHandler.registerNewUserAndSendActivationEmail,
+        this.email
+      )
     })
 
     it('should return the user and activation url', function () {

@@ -1,5 +1,4 @@
 const async = require('async')
-const _ = require('underscore')
 const { callbackify } = require('util')
 const { ObjectId } = require('mongodb')
 const Settings = require('@overleaf/settings')
@@ -8,6 +7,7 @@ const {
   promises: InstitutionsAPIPromises,
 } = require('./InstitutionsAPI')
 const FeaturesUpdater = require('../Subscription/FeaturesUpdater')
+const FeaturesHelper = require('../Subscription/FeaturesHelper')
 const UserGetter = require('../User/UserGetter')
 const NotificationsBuilder = require('../Notifications/NotificationsBuilder')
 const SubscriptionLocator = require('../Subscription/SubscriptionLocator')
@@ -55,33 +55,23 @@ async function _checkUsersFeatures(userIds) {
     nonProUserIds: [],
   }
 
-  await new Promise((resolve, reject) => {
-    async.eachLimit(
-      users,
-      ASYNC_LIMIT,
-      (user, callback) => {
-        const hasProFeaturesOrBetter = FeaturesUpdater.isFeatureSetBetter(
-          user.features,
-          Settings.features.professional
-        )
-
-        if (hasProFeaturesOrBetter) {
-          result.proUserIds.push(user._id)
-        } else {
-          result.nonProUserIds.push(user._id)
-        }
-        callback()
-      },
-      error => {
-        if (error) return reject(error)
-        resolve()
-      }
+  users.forEach(user => {
+    const hasProFeaturesOrBetter = FeaturesHelper.isFeatureSetBetter(
+      user.features,
+      Settings.features.professional
     )
+
+    if (hasProFeaturesOrBetter) {
+      result.proUserIds.push(user._id)
+    } else {
+      result.nonProUserIds.push(user._id)
+    }
   })
+
   return result
 }
 
-async function checkInstitutionUsers(institutionId) {
+async function checkInstitutionUsers(institutionId, emitNonProUserIds) {
   /*
     v1 has affiliation data. Via getInstitutionAffiliationsCounts, v1 will send
     lapsed_user_ids, which includes all user types
@@ -189,6 +179,9 @@ async function checkInstitutionUsers(institutionId) {
       result.emailUsers.nonPro[userType]++
     }
   })
+  if (emitNonProUserIds) {
+    result.nonProUserIds = nonProUserIds
+  }
   return result
 }
 
@@ -199,11 +192,10 @@ const InstitutionsManager = {
       [
         cb => fetchInstitutionAndAffiliations(institutionId, cb),
         function (institution, affiliations, cb) {
-          affiliations = _.map(affiliations, function (affiliation) {
+          for (const affiliation of affiliations) {
             affiliation.institutionName = institution.name
             affiliation.institutionId = institutionId
-            return affiliation
-          })
+          }
           async.eachLimit(affiliations, ASYNC_LIMIT, refreshFunction, err =>
             cb(err)
           )

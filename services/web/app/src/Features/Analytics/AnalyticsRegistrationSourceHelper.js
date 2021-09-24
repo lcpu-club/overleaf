@@ -5,6 +5,8 @@ const AnalyticsManager = require('./AnalyticsManager')
 function clearSource(session) {
   if (session) {
     delete session.required_login_for
+    delete session.required_login_from_product_medium
+    delete session.required_login_from_product_source
   }
 }
 
@@ -30,7 +32,6 @@ function parseReferrer(referrer, url) {
   if (!referrer) {
     return {
       medium: 'direct',
-      detail: 'none',
     }
   }
 
@@ -38,7 +39,7 @@ function parseReferrer(referrer, url) {
 
   const referrerValues = {
     medium: parsedReferrer.medium,
-    detail: parsedReferrer.referer,
+    source: parsedReferrer.referer || 'other',
   }
 
   if (referrerValues.medium === 'unknown') {
@@ -46,7 +47,7 @@ function parseReferrer(referrer, url) {
       const referrerHostname = new URL(referrer).hostname
       if (referrerHostname) {
         referrerValues.medium = 'link'
-        referrerValues.detail = referrerHostname
+        referrerValues.source = referrerHostname
       }
     } catch (error) {
       // ignore referrer parsing errors
@@ -78,16 +79,34 @@ function addUserProperties(userId, session) {
     return
   }
 
-  if (session.referal_id) {
-    AnalyticsManager.setUserProperty(
+  if (session.required_login_from_product_medium) {
+    AnalyticsManager.setUserPropertyForUser(
+      userId,
+      `registered-from-product-medium`,
+      session.required_login_from_product_medium
+    )
+    if (session.required_login_from_product_source) {
+      AnalyticsManager.setUserPropertyForUser(
+        userId,
+        `registered-from-product-source`,
+        session.required_login_from_product_source
+      )
+    }
+  } else if (session.referal_id) {
+    AnalyticsManager.setUserPropertyForUser(
       userId,
       `registered-from-bonus-scheme`,
       true
     )
+    AnalyticsManager.setUserPropertyForUser(
+      userId,
+      `registered-from-product-medium`,
+      'bonus-scheme'
+    )
   }
 
   if (session.required_login_for) {
-    AnalyticsManager.setUserProperty(
+    AnalyticsManager.setUserPropertyForUser(
       userId,
       `registered-from-${session.required_login_for}`,
       true
@@ -95,18 +114,27 @@ function addUserProperties(userId, session) {
   }
 
   if (session.inbound) {
-    if (session.inbound.referrer) {
-      AnalyticsManager.setUserProperty(
+    if (session.inbound.referrer && session.inbound.referrer.medium) {
+      AnalyticsManager.setUserPropertyForUser(
         userId,
-        `registered-from-referrer-${session.inbound.referrer.medium}`,
-        session.inbound.referrer.detail || 'other'
+        `registered-from-referrer-medium`,
+        `${session.inbound.referrer.medium
+          .charAt(0)
+          .toUpperCase()}${session.inbound.referrer.medium.slice(1)}`
       )
+      if (session.inbound.referrer.source) {
+        AnalyticsManager.setUserPropertyForUser(
+          userId,
+          `registered-from-referrer-source`,
+          session.inbound.referrer.source
+        )
+      }
     }
 
     if (session.inbound.utm) {
       for (const utmKey of UTM_KEYS) {
         if (session.inbound.utm[utmKey]) {
-          AnalyticsManager.setUserProperty(
+          AnalyticsManager.setUserPropertyForUser(
             userId,
             `registered-from-${utmKey.replace('_', '-')}`,
             session.inbound.utm[utmKey]
