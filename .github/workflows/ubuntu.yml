@@ -1,0 +1,21 @@
+name: Build Base Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Instance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Run build Script
+        run: |
+          sudo su
+          cd server-ce/
+          make build-base
+
+      - name: Run Update Script
+        run: ls # todo
