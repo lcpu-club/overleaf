@@ -1,6 +1,6 @@
 import App from '../../../base'
 import HumanReadableLogs from '../../human-readable-logs/HumanReadableLogs'
-import BibLogParser from '../../../vendor/libs/bib-log-parser'
+import BibLogParser from '../../log-parser/bib-log-parser'
 import PreviewPane from '../../../features/preview/components/preview-pane'
 import { react2angular } from 'react2angular'
 import { rootContext } from '../../../shared/context/root-context'
@@ -285,6 +285,7 @@ App.controller(
       }
       if (
         window.user.alphaProgram ||
+        window.user.betaProgram ||
         window.location.search.includes('file_line_errors=true')
       ) {
         params.file_line_errors = 'true'
@@ -649,7 +650,8 @@ App.controller(
       }
 
       function processBiber(log) {
-        const { errors, warnings } = BibLogParser.parse(log, {})
+        const bibLogParser = new BibLogParser(log, {})
+        const { errors, warnings } = bibLogParser.parse(log, {})
         const all = [].concat(errors, warnings)
         accumulateResults({ type: 'BibTeX:', all, errors, warnings })
       }
