@@ -1,0 +1,32 @@
+name: Build & Publish Base Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Build_Base_Image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Run build Script
+        run: |
+          cd server-ce/
+          sudo make build-base
+      
+      - name: Login to Ali-ACR
+        uses: aliyun/acr-login@v1
+        with:
+          login-server: https://registry.cn-shenzhen.aliyuncs.com
+          region-id: cn-shenzhen  # 3
+          access-key-id: "${{ secrets.ACR_ACCESSKEYID }}"
+          access-key-secret: "${{ secrets.ACR_ACCESSKEYSECRET }}"
+
+      - name: Publish Base Image
+        run: |
+          sudo make publish-base
+
+        
+
