@@ -35,6 +35,6 @@ jobs:
       - name: Publish Community Image
         if: startsWith( ${{ github.event.commits[0].message }} , "[publish]")
         run: |
-          export tag="$(git rev-parse --short HEAD)-${ITHUB_RUN_ID}"
+          export tag="$(git rev-parse --short HEAD)-${GITHUB_RUN_ID}"
           export aliyun_tag="registry.cn-hangzhou.aliyuncs.com/byrio/overleaf:${tag}"
           docker push ${aliyun_tag}
