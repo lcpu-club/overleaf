@@ -1,6 +1,12 @@
 name: Build & Publish Base Image
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      -  main
   workflow_dispatch:
 
 jobs:
@@ -11,22 +17,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@main
 
+      - name: Login to Ali-ACR
+        uses: aliyun/acr-login@v1
+        with:
+          login-server: https://registry.cn-hangzhou.aliyuncs.com
+          region-id: cn-hangzhou # 3
+          access-key-id: "${{ secrets.ACR_ACCESSKEYID }}"
+          access-key-secret: "${{ secrets.ACR_ACCESSKEYSECRET }}"
+
       - name: Run build Script
         run: |
           cd server-ce/
           sudo make build-base
-      
-      - name: Login to Ali-ACR
-        uses: aliyun/acr-login@v1
-        with:
-          login-server: https://registry.cn-shenzhen.aliyuncs.com
-          region-id: cn-shenzhen  # 3
-          access-key-id: "${{ secrets.ACR_ACCESSKEYID }}"
-          access-key-secret: "${{ secrets.ACR_ACCESSKEYSECRET }}"
+          sudo make build-community
 
-      - name: Publish Base Image
+      - name: Publish Community Image
+        if: startsWith( ${{ github.event.commits[0].message }} , "[publish]")
         run: |
-          sudo make publish-base
-
-        
-
+          cd server-ce/
+          sudo make publish-community

@@ -1,9 +1,9 @@
 # Makefile
 
 short_commit :=$(shell git rev-parse --short HEAD)
-pipeline_id := ${GITHUB_RUN_ID}
+pipeline_id := $(shell echo ${GITHUB_RUN_ID})
 tag := ${short_commit}-${pipeline_id}
-aliyun_tag ?= registry.cn-shenzhen.aliyuncs.com/byrio/overleaf:${tag}
+aliyun_tag ?= registry.cn-hangzhou.aliyuncs.com/byrio/overleaf:${tag}
 
 SHARELATEX_BASE_TAG ?= sharelatex/sharelatex-base
 SHARELATEX_TAG ?= sharelatex/sharelatex
@@ -18,15 +18,18 @@ build-base:
 	docker build -f Dockerfile-base --pull \
 		--cache-from $(SHARELATEX_BASE_CACHE) \
 		-t $(SHARELATEX_BASE_TAG) \
-		-t $(aliyun_tag) \
 		$(MONOREPO_ROOT)
 
 
 build-community:
 	cp .dockerignore $(MONOREPO_ROOT)
-	docker build --build-arg SHARELATEX_BASE_TAG --build-arg MONOREPO_REVISION -f Dockerfile -t $(SHARELATEX_TAG) $(MONOREPO_ROOT)
+	docker build --build-arg SHARELATEX_BASE_TAG --build-arg MONOREPO_REVISION \
+		-f Dockerfile \
+		-t $(SHARELATEX_TAG) \
+		-t $(aliyun_tag) \
+		$(MONOREPO_ROOT)
 
-publish-base:
+publish-community:
 	docker push $(aliyun_tag)
 
 PHONY: build-base build-community
