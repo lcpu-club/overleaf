@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     branches:
-      -  main
+      - main
   workflow_dispatch:
 
 jobs:
@@ -17,22 +17,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@main
 
+      - name: Run build Script
+        run: |
+          export GITHUB_RUN_ID=${{ github.run_id }}
+          echo ${DOCKER_CONFIG}
+          cd server-ce/
+          make build-base
+          make build-community
+
       - name: Login to Ali-ACR
         uses: aliyun/acr-login@v1
         with:
-          login-server: https://registry.cn-hangzhou.aliyuncs.com
-          region-id: cn-hangzhou # 3
+          region-id: cn-hangzhou
           access-key-id: "${{ secrets.ACR_ACCESSKEYID }}"
           access-key-secret: "${{ secrets.ACR_ACCESSKEYSECRET }}"
-
-      - name: Run build Script
-        run: |
-          cd server-ce/
-          sudo make build-base
-          sudo make build-community
 
       - name: Publish Community Image
         if: startsWith( ${{ github.event.commits[0].message }} , "[publish]")
         run: |
-          cd server-ce/
-          sudo make publish-community
+          export tag="$(git rev-parse --short HEAD)-${ITHUB_RUN_ID}"
+          export aliyun_tag="registry.cn-hangzhou.aliyuncs.com/byrio/overleaf:${tag}"
+          docker push ${aliyun_tag}
