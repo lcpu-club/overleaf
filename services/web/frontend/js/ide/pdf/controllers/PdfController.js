@@ -283,11 +283,7 @@ App.controller(
       if (getMeta('ol-enablePdfCaching')) {
         params.enable_pdf_caching = true
       }
-      if (
-        window.user.alphaProgram ||
-        window.user.betaProgram ||
-        window.location.search.includes('file_line_errors=true')
-      ) {
+      if (window.location.search.includes('file_line_errors=true')) {
         params.file_line_errors = 'true'
       }
       // if the previous run was a check, clear the error logs
@@ -838,10 +834,6 @@ App.controller(
 
     // This needs to be public.
     ide.$scope.recompile = $scope.recompile
-    // This method is a simply wrapper and exists only for tracking purposes.
-    ide.$scope.recompileViaKey = function () {
-      $scope.recompile({ keyShortcut: true })
-    }
 
     $scope.stop = function () {
       if (!$scope.pdf.compiling) {

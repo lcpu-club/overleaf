@@ -6,6 +6,7 @@ const Queues = require('../../infrastructure/Queues')
 const uuid = require('uuid')
 const _ = require('lodash')
 const { expressify } = require('../../util/promises')
+const { logger } = require('logger-sharelatex')
 
 const analyticsEventsQueue = Queues.getAnalyticsEventsQueue()
 const analyticsEditingSessionsQueue = Queues.getAnalyticsEditingSessionsQueue()
@@ -14,7 +15,7 @@ const analyticsUserPropertiesQueue = Queues.getAnalyticsUserPropertiesQueue()
 const ONE_MINUTE_MS = 60 * 1000
 
 function identifyUser(userId, analyticsId, isNewUser) {
-  if (!userId || !analyticsId) {
+  if (!userId || !analyticsId || userId === analyticsId) {
     return
   }
   if (_isAnalyticsDisabled() || _isSmokeTestUser(userId)) {
@@ -24,7 +25,7 @@ function identifyUser(userId, analyticsId, isNewUser) {
   analyticsEventsQueue
     .add(
       'identify',
-      { userId, analyticsId, isNewUser },
+      { userId, analyticsId, isNewUser, createdAt: new Date() },
       { delay: ONE_MINUTE_MS }
     )
     .then(() => {
@@ -56,12 +57,21 @@ function recordEventForSession(session, event, segmentation) {
   if (_isAnalyticsDisabled() || _isSmokeTestUser(userId)) {
     return
   }
+  logger.info({
+    analyticsId,
+    userId,
+    event,
+    segmentation,
+    isLoggedIn: !!userId,
+    createdAt: new Date(),
+  })
   _recordEvent({
     analyticsId,
     userId,
     event,
     segmentation,
     isLoggedIn: !!userId,
+    createdAt: new Date(),
   })
 }
 
@@ -117,7 +127,12 @@ function updateEditingSession(userId, projectId, countryCode) {
     event_type: 'editing-session',
   })
   analyticsEditingSessionsQueue
-    .add({ userId, projectId, countryCode })
+    .add('editing-session', {
+      userId,
+      projectId,
+      countryCode,
+      createdAt: new Date(),
+    })
     .then(() => {
       Metrics.analyticsQueue.inc({
         status: 'added',
@@ -140,7 +155,14 @@ function _recordEvent(
   analyticsEventsQueue
     .add(
       'event',
-      { analyticsId, userId, event, segmentation, isLoggedIn },
+      {
+        analyticsId,
+        userId,
+        event,
+        segmentation,
+        isLoggedIn,
+        createdAt: new Date(),
+      },
       { delay }
     )
     .then(() => {
@@ -157,10 +179,11 @@ function _setUserProperty({ analyticsId, propertyName, propertyValue }) {
     event_type: 'user-property',
   })
   analyticsUserPropertiesQueue
-    .add({
+    .add('user-property', {
       analyticsId,
       propertyName,
       propertyValue,
+      createdAt: new Date(),
     })
     .then(() => {
       Metrics.analyticsQueue.inc({
@@ -206,17 +229,15 @@ function getIdsFromSession(session) {
 async function analyticsIdMiddleware(req, res, next) {
   const session = req.session
   const sessionUser = SessionManager.getSessionUser(session)
-  if (session.analyticsId) {
-    if (sessionUser && session.analyticsId !== sessionUser.analyticsId) {
-      session.analyticsId = sessionUser.analyticsId
-    }
-  } else {
-    if (sessionUser) {
-      session.analyticsId = sessionUser.analyticsId || sessionUser.userId // backfill for logged-in sessions created before we added the analyticsId
-    } else {
-      session.analyticsId = uuid.v4()
-    }
+
+  if (sessionUser) {
+    // ensure `session.analyticsId` is set to the user's `analyticsId`, and fallback to their `userId` for pre-analyticsId users
+    session.analyticsId = sessionUser.analyticsId || sessionUser.userId
+  } else if (!session.analyticsId) {
+    // generate an `analyticsId` if needed
+    session.analyticsId = uuid.v4()
   }
+
   next()
 }
 
