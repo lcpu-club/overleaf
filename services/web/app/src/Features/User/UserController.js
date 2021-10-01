@@ -482,6 +482,27 @@ const UserController = {
     )
   },
 
+  register_public(req, res, next) {
+    const { email } = req.body
+    valid_pku = (/^[a-zA-Z0-9_-]+@(pku\.edu\.cn|stu\.pku\.edu\.cn)$/.test(email))
+    if (email == null || email === '' || !valid_pku) {
+      return res.sendStatus(422) // Unprocessable Entity
+    }
+    UserRegistrationHandler.registerNewUserAndSendActivationEmail(
+      email,
+      (error, user, setNewPasswordUrl) => {
+        if (error != null) {
+          return next(error)
+        }
+        setNewPasswordUrl = "请检查你的收件箱或垃圾邮件箱."
+        res.json({
+          email: user.email,
+          setNewPasswordUrl
+        })
+      }
+    )
+  },
+
   changePassword: expressify(changePassword),
 }
 

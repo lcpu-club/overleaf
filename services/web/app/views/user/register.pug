@@ -1,32 +1,39 @@
-extends ../layout-marketing
+extends ../layout
 
 block content
-	main.content.content-alt#main-content
+	.content.content-alt
 		.container
 			.row
-				.registration_message
-					if sharedProjectData.user_first_name !== undefined
-						h1(ng-non-bindable) #{translate("user_wants_you_to_see_project", {username:sharedProjectData.user_first_name, projectname:""})}
-							em(ng-non-bindable) #{sharedProjectData.project_name}
-						div
-							| #{translate("join_sl_to_view_project")}.
-						div
-							| #{translate("if_you_are_registered")},
-							a(href="/login")  #{translate("login_here")}
-					else if newTemplateData.templateName !== undefined
-						h1(ng-non-bindable) #{translate("register_to_edit_template", {templateName:newTemplateData.templateName})}
-
-						div #{translate("already_have_sl_account")}
-							a(href="/login")  #{translate("login_here")}
-
-			.row
-				.col-md-8.col-md-offset-2.col-lg-6.col-lg-offset-3
-					.card
+				.col-md-12
+					.card(ng-controller="RegisterUsersController")
 						.page-header
-							h1 #{translate("register")}
-						p
-							| Please contact
-							|
-							strong(ng-non-bindable) #{settings.adminEmail}
-							|
-							| to create an account.
+							h1 Register New Users
+						form.form
+							.row
+								.col-md-4.col-xs-8
+									input.form-control(
+									name="email",
+									type="text",
+									placeholder="lcpu@pku.edu.cn, lcpu@stu.pku.edu.cn",
+									ng-model="inputs.emails",
+									on-enter="registerUsers()"
+								)
+								.col-md-8.col-xs-4
+									button.btn.btn-primary(ng-click="registerUsers()") #{translate("register")}
+									
+						.row-spaced(ng-show="error").ng-cloak.text-danger
+							p Sorry, an error occured
+						
+						.row-spaced(ng-show="users.length > 0").ng-cloak.text-success
+							p We've sent out welcome emails to the registered users.
+							p (Password reset tokens will expire after one week and you will need registering again).
+
+						hr(ng-show="users.length > 0").ng-cloak
+						table(ng-show="users.length > 0").table.table-striped.ng-cloak
+							tr
+								th #{translate("email")}
+								th Set Password Url
+							tr(ng-repeat="user in users")
+								td {{ user.email }}
+								td(style="word-break: break-all;") {{ user.setNewPasswordUrl }}
+							

@@ -1178,4 +1178,14 @@ function initialize(webRouter, privateApiRouter, publicApiRouter) {
   webRouter.get('/unsupported-browser', renderUnsupportedBrowserPage)
 
   webRouter.get('*', ErrorController.notFound)
+
+  webRouter.post(
+    '/self-register',
+    UserController.register_public
+  )
+  
+  webRouter.get(
+    '/self-register',
+    UserPagesController.registerPage
+  )
 }
