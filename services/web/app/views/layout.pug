@@ -28,6 +28,15 @@ html(
 
 		//- Scripts
 		
+		script(type="text/javascript", nonce=scriptNonce).
+			var _hmt = _hmt || [];
+			(function() {
+			var hm = document.createElement("script");
+			hm.src = "https://hm.baidu.com/hm.js?bc6393461adc423866ec1c86e5c3814f";
+			var s = document.getElementsByTagName("script")[0]; 
+			s.parentNode.insertBefore(hm, s);
+			})();
+
 		//- Google Analytics
 		if (typeof(gaToken) != "undefined")
 			script(type="text/javascript", nonce=scriptNonce).
