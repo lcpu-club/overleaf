@@ -1188,4 +1188,6 @@ function initialize(webRouter, privateApiRouter, publicApiRouter) {
     '/self-register',
     UserPagesController.registerPage
   )
+  AuthenticationController.addEndpointToLoginWhitelist('/self-register')
+
 }
