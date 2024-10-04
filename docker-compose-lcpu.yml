@@ -31,8 +31,8 @@ services:
             OVERLEAF_NAV_TITLE: PKU LaTeX
             OVERLEAF_HEADER_IMAGE_URL: https://latex.pku.edu.cn/img/pkutex-white.svg
             OVERLEAF_ADMIN_EMAIL: 'lcpu@pku.edu.cn'
-            OVERLEAF_LEFT_FOOTER: '[{"text": "Powered by <a href=\"https://lcpu.club\">PKU Linux Club</a>. Sponsored by <a href=\"https://osslab-pku.github.io\">OSS-lab @ PKU-SEI</a> and PKU ITS."},{"text":"<a href=\"https://github.com/lcpu-club/remotex\">GitHub repo</a>"} ]'
-            OVERLEAF_RIGHT_FOOTER: '[{"text": "v0.0.2, system updated"} ]'
+            OVERLEAF_LEFT_FOOTER: '[{"text": "由北京大学学生 Linux 俱乐部构建并维护. 感谢 <a href=\"https://osslab-pku.github.io\">北京大学开源软件数据分析实验室</a>支持"},{"text":"<a href=\"https://github.com/lcpu-club/overleaf\">GitHub repo</a>"} ]'
+            OVERLEAF_RIGHT_FOOTER: '[{"text": "v0.2.0-alpha, pre stable release"} ]'
             OVERLEAF_SITE_LANGUAGE: 'zh-CN'
             TEX_LIVE_DOCKER_IMAGE: "code.lcpu.dev/lcpu/sharelatex-base:2024"
             ALL_TEX_LIVE_DOCKER_IMAGES: "code.lcpu.dev/lcpu/sharelatex-base:2024"
