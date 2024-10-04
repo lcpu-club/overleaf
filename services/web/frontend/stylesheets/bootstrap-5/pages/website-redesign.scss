@@ -7,7 +7,9 @@
   h4,
   h5,
   h6,
-  p {
+  p,
+  ul,
+  ol {
     @if $size == 'heading-2xl' {
       @include heading-2xl;
     } @else if $size == 'heading-xl' {
@@ -202,6 +204,18 @@
     .font-size-h6 {
       @include reset-font-size('base');
     }
+  }
+
+  .font-size-display-xs {
+    @include display-xs;
+  }
+
+  .text-purple-bright {
+    color: var(--purple-bright);
+  }
+
+  .text-green-bright {
+    color: var(--green-bright);
   }
 
   .card {

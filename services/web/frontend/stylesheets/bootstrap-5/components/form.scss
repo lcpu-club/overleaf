@@ -84,7 +84,7 @@
 }
 
 .form-label {
-  &:has(+ .form-control[disabled]) {
+  &:has(+ .form-control[disabled], + .form-control-wrapper-disabled) {
     color: var(--content-disabled);
   }
 }
@@ -167,5 +167,16 @@
     outline: 0;
     border-color: $input-focus-border-color;
     box-shadow: $input-focus-box-shadow;
+  }
+}
+
+.website-redesign {
+  label {
+    color: $form-text-color;
+    display: inline-block;
+    margin-bottom: var(--spacing-02);
+    font-weight: bold;
+
+    @include body-sm;
   }
 }
