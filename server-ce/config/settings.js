@@ -54,7 +54,7 @@ const settings = {
     docker: {
       maxContainerAge: 3600000,
       image: "code.lcpu.dev/lcpu/sharelatex-base:2024",
-      user: "root",
+      user: "www-data",
     },
   },
 
