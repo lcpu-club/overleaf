@@ -70,7 +70,7 @@ const buildDefaultPolicy = (reportUri, styleSrc) => {
 
 const buildViewPolicy = (scriptNonce, reportPercentage, reportUri) => {
   const directives = [
-    `script-src 'nonce-${scriptNonce}' 'unsafe-inline' 'strict-dynamic' https: 'report-sample'`, // only allow scripts from certain sources
+    `script-src 'nonce-${scriptNonce}' 'unsafe-eval' 'unsafe-inline' 'strict-dynamic' https: 'report-sample'`, // only allow scripts from certain sources
     `object-src 'none'`, // forbid loading an "object" element
     `base-uri 'none'`, // forbid setting a "base" element
   ]
