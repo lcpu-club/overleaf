@@ -114,8 +114,6 @@ ENV LOG_LEVEL="info"
 # LCPU: some customizations
 # -------------------------------
 COPY lcpu/js/iaaa.js /overleaf/public/js/iaaa.js
-COPY lcpu/assets/* /overleaf/assets/
-
 
 EXPOSE 80
 
