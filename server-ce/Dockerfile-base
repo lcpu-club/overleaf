@@ -48,15 +48,18 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # # docker build \
 #     --build-arg TEXLIVE_MIRROR=https://ctan.crest.fr/tex-archive/systems/texlive/tlnet \
 #     -f Dockerfile-base -t sharelatex/sharelatex-base .
-ARG TEXLIVE_MIRROR=https://mirrors.pku.edu.cn/ctan/systems/texlive/tlnet
+ARG TEXLIVE_MIRROR_2024=https://mirrors.pku.edu.cn/ctan/systems/texlive/tlnet
+ARG TEXLIVE_MIRROR_2022=https://mirrors.tuna.tsinghua.edu.cn/tex-historic-archive/systems/texlive/2022/tlnet-final
+ARG TEXLIVE_MIRROR_2020=https://mirrors.tuna.tsinghua.edu.cn/tex-historic-archive/systems/texlive/2020/tlnet-final
 
+# Install Texlive 2024
 RUN mkdir /install-tl-unx \
 &&  wget --quiet https://tug.org/texlive/files/texlive.asc \
 &&  gpg --import texlive.asc \
 &&  rm texlive.asc \
-&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz \
-&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz.sha512 \
-&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz.sha512.asc \
+&&  wget --quiet ${TEXLIVE_MIRROR_2024}/install-tl-unx.tar.gz \
+&&  wget --quiet ${TEXLIVE_MIRROR_2024}/install-tl-unx.tar.gz.sha512 \
+&&  wget --quiet ${TEXLIVE_MIRROR_2024}/install-tl-unx.tar.gz.sha512.asc \
 &&  gpg --verify install-tl-unx.tar.gz.sha512.asc \
 &&  sha512sum -c install-tl-unx.tar.gz.sha512 \
 &&  tar -xz -C /install-tl-unx --strip-components=1 -f install-tl-unx.tar.gz \
@@ -68,13 +71,59 @@ RUN mkdir /install-tl-unx \
     \
 &&  /install-tl-unx/install-tl \
       -profile /install-tl-unx/texlive.profile \
-      -repository ${TEXLIVE_MIRROR} \
+      -repository ${TEXLIVE_MIRROR_2024} \
     \
 &&  $(find /usr/local/texlive -name tlmgr) path add \
-&&  tlmgr option repository ${TEXLIVE_MIRROR} \
+&&  tlmgr option repository ${TEXLIVE_MIRROR_2024} \
 &&  tlmgr update --self \
 &&  tlmgr install scheme-full \
 &&  tlmgr path add \
+&&  rm -rf /install-tl-unx
+
+# Install Texlive 2022
+RUN mkdir /install-tl-unx \
+&&  wget --quiet https://tug.org/texlive/files/texlive.asc \
+&&  gpg --import texlive.asc \
+&&  rm texlive.asc \
+&&  wget --quiet ${TEXLIVE_MIRROR_2022}/install-tl-unx.tar.gz \
+&&  wget --quiet ${TEXLIVE_MIRROR_2022}/install-tl-unx.tar.gz.sha512 \
+&&  wget --quiet ${TEXLIVE_MIRROR_2022}/install-tl-unx.tar.gz.sha512.asc \
+&&  gpg --verify install-tl-unx.tar.gz.sha512.asc \
+&&  sha512sum -c install-tl-unx.tar.gz.sha512 \
+&&  tar -xz -C /install-tl-unx --strip-components=1 -f install-tl-unx.tar.gz \
+&&  rm install-tl-unx.tar.gz* \
+&&  echo "tlpdbopt_autobackup 0" >> /install-tl-unx/texlive.profile \
+&&  echo "tlpdbopt_install_docfiles 0" >> /install-tl-unx/texlive.profile \
+&&  echo "tlpdbopt_install_srcfiles 0" >> /install-tl-unx/texlive.profile \
+&&  echo "selected_scheme scheme-basic" >> /install-tl-unx/texlive.profile \
+    \
+&&  /install-tl-unx/install-tl \
+      -profile /install-tl-unx/texlive.profile \
+      -repository ${TEXLIVE_MIRROR_2022} \
+    \
+&&  rm -rf /install-tl-unx
+
+# Install Texlive 2020
+RUN mkdir /install-tl-unx \
+&&  wget --quiet https://tug.org/texlive/files/texlive.asc \
+&&  gpg --import texlive.asc \
+&&  rm texlive.asc \
+&&  wget --quiet ${TEXLIVE_MIRROR_2020}/install-tl-unx.tar.gz \
+&&  wget --quiet ${TEXLIVE_MIRROR_2020}/install-tl-unx.tar.gz.sha512 \
+&&  wget --quiet ${TEXLIVE_MIRROR_2020}/install-tl-unx.tar.gz.sha512.asc \
+&&  gpg --verify install-tl-unx.tar.gz.sha512.asc \
+&&  sha512sum -c install-tl-unx.tar.gz.sha512 \
+&&  tar -xz -C /install-tl-unx --strip-components=1 -f install-tl-unx.tar.gz \
+&&  rm install-tl-unx.tar.gz* \
+&&  echo "tlpdbopt_autobackup 0" >> /install-tl-unx/texlive.profile \
+&&  echo "tlpdbopt_install_docfiles 0" >> /install-tl-unx/texlive.profile \
+&&  echo "tlpdbopt_install_srcfiles 0" >> /install-tl-unx/texlive.profile \
+&&  echo "selected_scheme scheme-basic" >> /install-tl-unx/texlive.profile \
+    \
+&&  /install-tl-unx/install-tl \
+      -profile /install-tl-unx/texlive.profile \
+      -repository ${TEXLIVE_MIRROR_2020} \
+    \
 &&  rm -rf /install-tl-unx
 
 
