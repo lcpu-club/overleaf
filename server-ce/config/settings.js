@@ -50,6 +50,12 @@ const TMP_DIR = '/var/lib/overleaf/tmp'
 const settings = {
   clsi: {
     optimiseInDocker: process.env.OPTIMISE_PDF === 'true',
+    dockerRunner: true,
+    docker: {
+      maxContainerAge: 3600000,
+      image: "sharelatex-base:2024",
+      user: "www-data",
+    },
   },
 
   brandPrefix: '',
@@ -172,6 +178,7 @@ const settings = {
     clsiCacheDir: Path.join(DATA_DIR, 'cache'),
     // Where to write the output files to disk after running LaTeX
     outputDir: Path.join(DATA_DIR, 'output'),
+    sandboxedCompilesHostDir: process.env.SANDBOXED_COMPILES_HOST_DIR,
   },
 
   // Server Config

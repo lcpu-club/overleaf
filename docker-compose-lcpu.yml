@@ -19,6 +19,7 @@ services:
             - redis
         volumes:
             - /opt/volumes/sharelatex/data:/var/lib/overleaf
+            - /var/run/docker.sock:/var/run/docker.sock
         environment:
             OVERLEAF_APP_NAME: PKU LaTeX
             OVERLEAF_MONGO_URL: mongodb://mongo/sharelatex
@@ -37,6 +38,10 @@ services:
             OVERLEAF_LEFT_FOOTER: '[{"text": "Powered by <a href=\"https://lcpu.club\">PKU Linux Club</a>. Sponsored by <a href=\"https://osslab-pku.github.io\">OSS-lab @ PKU-SEI</a> and PKU ITS."},{"text":"<a href=\"https://github.com/lcpu-club/remotex\">GitHub repo</a>"} ]'
             OVERLEAF_RIGHT_FOOTER: '[{"text": "v0.0.2, system updated"} ]'
             OVERLEAF_SITE_LANGUAGE: 'zh-CN'
+            TEX_LIVE_DOCKER_IMAGE: "code.lcpu.dev/lcpu/sharelatex-base:2024"
+            ALL_TEX_LIVE_DOCKER_IMAGES: "code.lcpu.dev/lcpu/sharelatex-base:2024"
+            OVERLEAF_IS_SERVER_PRO: true
+            SANDBOXED_COMPILES_HOST_DIR: '/opt/volumes/sharelatex/data/data/compiles'
 
     mongo:
         restart: always
