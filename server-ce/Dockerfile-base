@@ -80,51 +80,10 @@ RUN mkdir /install-tl-unx \
 &&  tlmgr path add \
 &&  rm -rf /install-tl-unx
 
-# Install Texlive 2022
-RUN mkdir /install-tl-unx \
-&&  wget --quiet https://tug.org/texlive/files/texlive.asc \
-&&  gpg --import texlive.asc \
-&&  rm texlive.asc \
-&&  wget --quiet ${TEXLIVE_MIRROR_2022}/install-tl-unx.tar.gz \
-&&  wget --quiet ${TEXLIVE_MIRROR_2022}/install-tl-unx.tar.gz.sha512 \
-&&  wget --quiet ${TEXLIVE_MIRROR_2022}/install-tl-unx.tar.gz.sha512.asc \
-&&  gpg --verify install-tl-unx.tar.gz.sha512.asc \
-&&  sha512sum -c install-tl-unx.tar.gz.sha512 \
-&&  tar -xz -C /install-tl-unx --strip-components=1 -f install-tl-unx.tar.gz \
-&&  rm install-tl-unx.tar.gz* \
-&&  echo "tlpdbopt_autobackup 0" >> /install-tl-unx/texlive.profile \
-&&  echo "tlpdbopt_install_docfiles 0" >> /install-tl-unx/texlive.profile \
-&&  echo "tlpdbopt_install_srcfiles 0" >> /install-tl-unx/texlive.profile \
-&&  echo "selected_scheme scheme-basic" >> /install-tl-unx/texlive.profile \
-    \
-&&  /install-tl-unx/install-tl \
-      -profile /install-tl-unx/texlive.profile \
-      -repository ${TEXLIVE_MIRROR_2022} \
-    \
-&&  rm -rf /install-tl-unx
-
-# Install Texlive 2020
-RUN mkdir /install-tl-unx \
-&&  wget --quiet https://tug.org/texlive/files/texlive.asc \
-&&  gpg --import texlive.asc \
-&&  rm texlive.asc \
-&&  wget --quiet ${TEXLIVE_MIRROR_2020}/install-tl-unx.tar.gz \
-&&  wget --quiet ${TEXLIVE_MIRROR_2020}/install-tl-unx.tar.gz.sha512 \
-&&  wget --quiet ${TEXLIVE_MIRROR_2020}/install-tl-unx.tar.gz.sha512.asc \
-&&  gpg --verify install-tl-unx.tar.gz.sha512.asc \
-&&  sha512sum -c install-tl-unx.tar.gz.sha512 \
-&&  tar -xz -C /install-tl-unx --strip-components=1 -f install-tl-unx.tar.gz \
-&&  rm install-tl-unx.tar.gz* \
-&&  echo "tlpdbopt_autobackup 0" >> /install-tl-unx/texlive.profile \
-&&  echo "tlpdbopt_install_docfiles 0" >> /install-tl-unx/texlive.profile \
-&&  echo "tlpdbopt_install_srcfiles 0" >> /install-tl-unx/texlive.profile \
-&&  echo "selected_scheme scheme-basic" >> /install-tl-unx/texlive.profile \
-    \
-&&  /install-tl-unx/install-tl \
-      -profile /install-tl-unx/texlive.profile \
-      -repository ${TEXLIVE_MIRROR_2020} \
-    \
-&&  rm -rf /install-tl-unx
+# Install fonts from windows
+# --------------------------
+COPY lcpu/fonts/* /usr/local/share/fonts/
+RUN fc-cache -f -v
 
 
 # Set up overleaf user and home directory
