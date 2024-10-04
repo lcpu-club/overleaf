@@ -8,6 +8,10 @@ services:
                 condition: service_healthy
             redis:
                 condition: service_started
+            latex-ocr-ui:
+                condition: service_started
+            latex-ocr-api:
+                condition: service_started
         ports:
             - 5000:80
         links:
@@ -56,3 +60,13 @@ services:
             - 6379
         volumes:
             - /opt/volumes/sharelatex/redis:/data
+
+    latex-ocr-ui:
+        restart: always
+        image: code.lcpu.dev/lcpu/latex-ocr-ui:main
+        container_name: latex-ocr-ui
+    
+    latex-ocr-api:
+        restart: always
+        image: docker.smirrors.lcpu.dev/lukasblecher/pix2tex:api
+        container_name: latex-ocr-api
