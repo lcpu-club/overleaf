@@ -1,7 +1,7 @@
 services:
     sharelatex:
         restart: always
-        image: sharelatex/sharelatex
+        image: code.lcpu.dev/lcpu/sharelatex:main
         container_name: sharelatex
         depends_on:
             mongo:
@@ -14,7 +14,7 @@ services:
             - mongo
             - redis
         volumes:
-            - /opt/volumes/sharelatex/data:/var/lib/sharelatex
+            - /opt/volumes/sharelatex/data:/var/lib/overleaf
         environment:
             OVERLEAF_APP_NAME: PKU LaTeX
             OVERLEAF_MONGO_URL: mongodb://mongo/sharelatex
@@ -32,13 +32,14 @@ services:
             OVERLEAF_ADMIN_EMAIL: 'lcpu@pku.edu.cn'
             OVERLEAF_LEFT_FOOTER: '[{"text": "Powered by <a href=\"https://lcpu.club\">PKU Linux Club</a>. Sponsored by <a href=\"https://osslab-pku.github.io\">OSS-lab @ PKU-SEI</a> and PKU ITS."},{"text":"<a href=\"https://github.com/lcpu-club/remotex\">GitHub repo</a>"} ]'
             OVERLEAF_RIGHT_FOOTER: '[{"text": "v0.0.2, system updated"} ]'
+            OVERLEAF_SITE_LANGUAGE: 'zh-CN'
 
     mongo:
         restart: always
-        image: mongo:4.4
+        image: docker.smirrors.lcpu.dev/library/mongo:5
         container_name: mongo
-        expose:
-            - 27017
+        ports:
+            - 127.0.0.1:27017:27017
         volumes:
             - /opt/volumes/sharelatex/mongo:/data/db
         healthcheck:
@@ -49,7 +50,7 @@ services:
 
     redis:
         restart: always
-        image: redis:5
+        image: docker.smirrors.lcpu.dev/library/redis:6.2
         container_name: redis
         expose:
             - 6379

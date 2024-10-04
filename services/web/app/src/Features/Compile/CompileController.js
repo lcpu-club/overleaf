@@ -23,7 +23,7 @@ const {
   RequestFailedError,
 } = require('@overleaf/fetch-utils')
 
-const COMPILE_TIMEOUT_MS = 10 * 60 * 1000
+const COMPILE_TIMEOUT_MS = 20 * 60 * 1000
 
 const pdfDownloadRateLimiter = new RateLimiter('full-pdf-download', {
   points: 1000,
