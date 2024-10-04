@@ -2,7 +2,7 @@
 # Overleaf Community Edition (overleaf/overleaf)
 # ---------------------------------------------
 
-ARG OVERLEAF_BASE_TAG=sharelatex/sharelatex-base:latest
+ARG OVERLEAF_BASE_TAG=code.lcpu.dev/lcpu/sharelatex-base:latest
 FROM $OVERLEAF_BASE_TAG
 
 WORKDIR /overleaf
@@ -110,6 +110,11 @@ ENV GRACEFUL_SHUTDOWN_DELAY_SECONDS=1
 
 ENV NODE_ENV="production"
 ENV LOG_LEVEL="info"
+
+# LCPU: some customizations
+# -------------------------------
+COPY lcpu/js/iaaa.js /overleaf/public/js/iaaa.js
+COPY lcpu/assets/* /overleaf/assets/
 
 
 EXPOSE 80

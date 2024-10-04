@@ -18,6 +18,30 @@ module.exports = {
   apply(webRouter) {
     logger.debug({}, 'Init launchpad router')
 
+    webRouter.get('/auth/iaaa', (req, res, next) => {
+      const token = req.query.token
+      const APP_ID = "latex_online";
+      const REMOTE_ADDR = req.ip
+      const KEY = "REPLACE_ME_IAAA_KEY";
+      const str = `appId=${APP_ID}&remoteAddr=${REMOTE_ADDR}&token=${token}` + KEY;
+      const md5 = (data) => crypto.createHash("md5").update(data).digest("hex");
+      const url = `https://iaaa.pku.edu.cn/iaaa/svc/token/validate.do?remoteAddr=${REMOTE_ADDR}&appId=${APP_ID}&token=${token}&msgAbs=${md5(str)}`;
+      r(url, function (err, resp, body) {
+        const { userInfo } = JSON.parse(body);
+        if (!userInfo) return res.redirect('/');
+        const { identityId } = userInfo;
+        const email = identityId + "@pku.edu.cn";
+        const password = crypto.randomBytes(16).toString('hex')
+        UserRegistrationHandler.registerNewUser({ email, password }, function (err, user) {
+          if (!user) {
+            return res.redirect('/');
+          }
+          return AuthenticationController.finishLogin(user, req, res, next);
+        });
+      })
+    })
+    AuthenticationController.addEndpointToLoginWhitelist('/auth/iaaa')
+
     webRouter.get('/launchpad', LaunchpadController.launchpadPage)
     webRouter.post(
       '/launchpad/register_admin',

@@ -1,0 +1,57 @@
+services:
+    sharelatex:
+        restart: always
+        image: sharelatex/sharelatex
+        container_name: sharelatex
+        depends_on:
+            mongo:
+                condition: service_healthy
+            redis:
+                condition: service_started
+        ports:
+            - 5000:80
+        links:
+            - mongo
+            - redis
+        volumes:
+            - /opt/volumes/sharelatex/data:/var/lib/sharelatex
+        environment:
+            OVERLEAF_APP_NAME: PKU LaTeX
+            OVERLEAF_MONGO_URL: mongodb://mongo/sharelatex
+            OVERLEAF_REDIS_HOST: redis
+            REDIS_HOST: redis
+            ENABLED_LINKED_FILE_TYPES: 'project_file,project_output_file'
+            ENABLE_CONVERSIONS: 'true'
+            EMAIL_CONFIRMATION_DISABLED: 'true'
+            TEXMFVAR: /var/lib/overleaf/tmp/texmf-var
+            OVERLEAF_BEHIND_PROXY: 'true'
+            OVERLEAF_SECURE_COOKIE: 'true'
+            OVERLEAF_SITE_URL: https://latex.pku.edu.cn/
+            OVERLEAF_NAV_TITLE: PKU LaTeX
+            OVERLEAF_HEADER_IMAGE_URL: https://latex.pku.edu.cn/img/pkutex-white.svg
+            OVERLEAF_ADMIN_EMAIL: 'lcpu@pku.edu.cn'
+            OVERLEAF_LEFT_FOOTER: '[{"text": "Powered by <a href=\"https://lcpu.club\">PKU Linux Club</a>. Sponsored by <a href=\"https://osslab-pku.github.io\">OSS-lab @ PKU-SEI</a> and PKU ITS."},{"text":"<a href=\"https://github.com/lcpu-club/remotex\">GitHub repo</a>"} ]'
+            OVERLEAF_RIGHT_FOOTER: '[{"text": "v0.0.2, system updated"} ]'
+
+    mongo:
+        restart: always
+        image: mongo:4.4
+        container_name: mongo
+        expose:
+            - 27017
+        volumes:
+            - /opt/volumes/sharelatex/mongo:/data/db
+        healthcheck:
+            test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+            interval: 10s
+            timeout: 10s
+            retries: 5
+
+    redis:
+        restart: always
+        image: redis:5
+        container_name: redis
+        expose:
+            - 6379
+        volumes:
+            - /opt/volumes/sharelatex/redis:/data

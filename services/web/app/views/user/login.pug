@@ -32,11 +32,12 @@ block content
 									required,
 									placeholder='********',
 								)
+							.form-group
+  								button.btn.btn-default(type='button', onclick='doIAAA()') 北京大学统一认证登录
 							.actions
 								button.btn-primary.btn(
 									type='submit',
 									data-ol-disabled-inflight
 								)
-									span(data-ol-inflight="idle") #{translate("login")}
+									span(data-ol-inflight="idle") 密码登陆
 									span(hidden data-ol-inflight="pending") #{translate("logging_in")}…
-								a.pull-right(href='/user/password/reset') #{translate("forgot_your_password")}?
