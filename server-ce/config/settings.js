@@ -53,15 +53,15 @@ const settings = {
     dockerRunner: true,
     docker: {
       maxContainerAge: 3600000,
-      image: "sharelatex-base:2024",
-      user: "www-data",
+      image: "code.lcpu.dev/lcpu/sharelatex-base:2024",
+      user: "root",
     },
   },
 
   brandPrefix: '',
 
   allowAnonymousReadAndWriteSharing:
-    process.env.OVERLEAF_ALLOW_ANONYMOUS_READ_AND_WRITE_SHARING === 'true',
+    process.env.OVERLEAF_ALLOW_ANONYMOUS_READ_AND_WRITE_SHARING === 'false',
 
   // Databases
   // ---------
