@@ -2,7 +2,7 @@
 # Overleaf Community Edition (overleaf/overleaf)
 # ---------------------------------------------
 
-ARG OVERLEAF_BASE_TAG=code.lcpu.dev/lcpu/sharelatex-base:latest
+ARG OVERLEAF_BASE_TAG=code.lcpu.dev/lcpu/sharelatex-base:main
 FROM $OVERLEAF_BASE_TAG
 
 WORKDIR /overleaf
