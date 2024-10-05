@@ -52,8 +52,8 @@ const settings = {
     optimiseInDocker: process.env.OPTIMISE_PDF === 'true',
     dockerRunner: true,
     docker: {
-      maxContainerAge: 3600000,
-      image: "code.lcpu.dev/lcpu/sharelatex-base:2024",
+      maxContainerAge: process.env.SANDBOXED_COMPILES_CONTAINER_TIMEOUT,
+      image: process.env.TEX_LIVE_DOCKER_IMAGE,
       user: "www-data",
     },
   },

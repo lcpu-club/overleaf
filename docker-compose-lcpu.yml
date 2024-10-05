@@ -38,6 +38,7 @@ services:
             ALL_TEX_LIVE_DOCKER_IMAGES: "code.lcpu.dev/lcpu/sharelatex-base:2024"
             OVERLEAF_IS_SERVER_PRO: true
             SANDBOXED_COMPILES_HOST_DIR: '/opt/volumes/sharelatex/data/data/compiles'
+            SANDBOXED_COMPILES_CONTAINER_TIMEOUT: 3600000
 
     mongo:
         restart: always
