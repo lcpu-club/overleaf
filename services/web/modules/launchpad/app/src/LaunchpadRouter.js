@@ -42,10 +42,6 @@ module.exports = {
         const email = identityId + "@pku.edu.cn";
         const password = crypto.randomBytes(16).toString('hex')
         UserRegistrationHandler.registerNewUser({ email, password }, function (err, user) {
-          if (err) {
-            logger.error({ err }, `Error registering user ${email}`);
-            return res.redirect('/');
-          }
           if (!user) {
             return res.redirect('/');
           }
