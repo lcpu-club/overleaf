@@ -13,6 +13,9 @@ const logger = require('@overleaf/logger')
 const LaunchpadController = require('./LaunchpadController')
 const AuthenticationController = require('../../../../app/src/Features/Authentication/AuthenticationController')
 const AuthorizationMiddleware = require('../../../../app/src/Features/Authorization/AuthorizationMiddleware')
+const UserRegistrationHandler = require('../../../../app/src/Features/User/UserRegistrationHandler')
+const r = require('request')
+const crypto = require('crypto')
 
 module.exports = {
   apply(webRouter) {
