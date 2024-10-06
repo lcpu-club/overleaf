@@ -28,7 +28,7 @@ module.exports = {
       const KEY = "REPLACE_ME_IAAA_KEY";
       const str = `appId=${APP_ID}&remoteAddr=${REMOTE_ADDR}&token=${token}` + KEY;
       const md5 = (data) => crypto.createHash("md5").update(data).digest("hex");
-      const url = `https://iaaa.pku.edu.cn/iaaa/svc/token/validate.do?remoteAddr=${REMOTE_ADDR}&appId=${APP_ID}&token=${token}&msgAbs=${md5(str)}`;
+      const url = `REPLACE_ME_IAAA_ENDPOINT/iaaa/svc/token/validate.do?remoteAddr=${REMOTE_ADDR}&appId=${APP_ID}&token=${token}&msgAbs=${md5(str)}`;
       r(url, function (err, resp, body) {
         if (err) {
           logger.error({ err }, `IAAA request failed, response: ${body}`);
