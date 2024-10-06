@@ -51,11 +51,11 @@ module.exports = {
                 return res.redirect('/');
               }
               logger.info({ email }, `User ${email} registered`);
-              return AuthenticationController.finishLogin(user, req, res, next);
+              AuthenticationController.finishLogin(user, req, res, next);
             });
           }
           logger.info({ email }, `User ${email} logged in`);
-          return AuthenticationController.finishLogin(user, req, res, next);
+          AuthenticationController.finishLogin(user, req, res, next);
         })
       })
     })
