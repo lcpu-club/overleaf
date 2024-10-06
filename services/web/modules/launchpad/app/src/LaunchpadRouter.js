@@ -30,12 +30,22 @@ module.exports = {
       const md5 = (data) => crypto.createHash("md5").update(data).digest("hex");
       const url = `https://iaaa.pku.edu.cn/iaaa/svc/token/validate.do?remoteAddr=${REMOTE_ADDR}&appId=${APP_ID}&token=${token}&msgAbs=${md5(str)}`;
       r(url, function (err, resp, body) {
+        if (err) {
+          logger.error({ err }, `IAAA request failed, response: ${body}`);
+        }
         const { userInfo } = JSON.parse(body);
-        if (!userInfo) return res.redirect('/');
+        if (!userInfo) {
+          logger.error({ err }, `IAAA request failed, response: ${body}`);
+          return res.redirect('/');
+        }
         const { identityId } = userInfo;
         const email = identityId + "@pku.edu.cn";
         const password = crypto.randomBytes(16).toString('hex')
         UserRegistrationHandler.registerNewUser({ email, password }, function (err, user) {
+          if (err) {
+            logger.error({ err }, `Error registering user ${email}`);
+            return res.redirect('/');
+          }
           if (!user) {
             return res.redirect('/');
           }
