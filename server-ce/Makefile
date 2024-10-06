@@ -3,12 +3,12 @@
 MONOREPO_ROOT := ../
 export MONOREPO_REVISION := $(shell git rev-parse HEAD)
 export BRANCH_NAME ?= main
-export OVERLEAF_BASE_BRANCH ?= code.lcpu.dev/lcpu/sharelatex-base:$(BRANCH_NAME)
-export OVERLEAF_BASE_LATEST ?= code.lcpu.dev/lcpu/sharelatex-base:latest
-export OVERLEAF_BASE_TAG ?= code.lcpu.dev/lcpu/sharelatex-base:$(BRANCH_NAME)-$(MONOREPO_REVISION)
-export OVERLEAF_BRANCH ?= code.lcpu.dev/lcpu/sharelatex:$(BRANCH_NAME)
-export OVERLEAF_LATEST ?= code.lcpu.dev/lcpu/sharelatex:latest
-export OVERLEAF_TAG ?= code.lcpu.dev/lcpu/sharelatex:$(BRANCH_NAME)-$(MONOREPO_REVISION)
+export OVERLEAF_BASE_BRANCH ?= code.lcpu.dev/pkutex/sharelatex-base:$(BRANCH_NAME)
+export OVERLEAF_BASE_LATEST ?= code.lcpu.dev/pkutex/sharelatex-base:latest
+export OVERLEAF_BASE_TAG ?= code.lcpu.dev/pkutex/sharelatex-base:$(BRANCH_NAME)-$(MONOREPO_REVISION)
+export OVERLEAF_BRANCH ?= code.lcpu.dev/pkutex/sharelatex:$(BRANCH_NAME)
+export OVERLEAF_LATEST ?= code.lcpu.dev/pkutex/sharelatex:latest
+export OVERLEAF_TAG ?= code.lcpu.dev/pkutex/sharelatex:$(BRANCH_NAME)-$(MONOREPO_REVISION)
 
 all: build-base build-community
 

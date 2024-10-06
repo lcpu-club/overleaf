@@ -1,7 +1,7 @@
 services:
     sharelatex:
         restart: always
-        image: code.lcpu.dev/lcpu/sharelatex:latest
+        image: code.lcpu.dev/pkutex/sharelatex:latest
         container_name: sharelatex
         depends_on:
             mongo:
@@ -40,8 +40,8 @@ services:
             DOCKER_USER: "www-data"
             SANDBOXED_COMPILES_HOST_DIR: '/opt/volumes/sharelatex/data/data/compiles'
             SANDBOXED_COMPILES_CONTAINER_TIMEOUT: 3600000
-            TEX_LIVE_DOCKER_IMAGE: "code.lcpu.dev/lcpu/sharelatex-base:2024.1"
-            ALL_TEX_LIVE_DOCKER_IMAGES: "code.lcpu.dev/lcpu/sharelatex-base:2024.1,code.lcpu.dev/lcpu/sharelatex-base:2022.1,code.lcpu.dev/lcpu/sharelatex-base:2020.1"
+            TEX_LIVE_DOCKER_IMAGE: "code.lcpu.dev/pkutex/sharelatex-base:2024.1"
+            ALL_TEX_LIVE_DOCKER_IMAGES: "code.lcpu.dev/pkutex/sharelatex-base:2024.1,code.lcpu.dev/pkutex/sharelatex-base:2022.1,code.lcpu.dev/pkutex/sharelatex-base:2020.1"
             ALL_TEX_LIVE_DOCKER_IMAGE_NAMES: "TeX Live 2024,TeX Live 2022,TeX Live 2020"
 
     mongo:
