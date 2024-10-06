@@ -16,6 +16,7 @@ const AuthorizationMiddleware = require('../../../../app/src/Features/Authorizat
 const UserRegistrationHandler = require('../../../../app/src/Features/User/UserRegistrationHandler')
 const r = require('request')
 const crypto = require('crypto')
+const UserGetter = require('../../../../app/src/Features/User/UserGetter')
 
 module.exports = {
   apply(webRouter) {
@@ -40,13 +41,22 @@ module.exports = {
         }
         const { identityId } = userInfo;
         const email = identityId + "@pku.edu.cn";
-        const password = crypto.randomBytes(16).toString('hex')
-        UserRegistrationHandler.registerNewUser({ email, password }, function (err, user) {
+        // find user by email
+        UserGetter.getUserByMainEmail(email, function (err, user) {
           if (!user) {
-            return res.redirect('/');
+            const password = crypto.randomBytes(16).toString('hex')
+            UserRegistrationHandler.registerNewUser({ email, password }, function (err, user) {
+              if (!user) {
+                logger.error({ err }, `Failed to register user ${email}`);
+                return res.redirect('/');
+              }
+              logger.info({ email }, `User ${email} registered`);
+              return AuthenticationController.finishLogin(user, req, res, next);
+            });
           }
+          logger.info({ email }, `User ${email} logged in`);
           return AuthenticationController.finishLogin(user, req, res, next);
-        });
+        })
       })
     })
     AuthenticationController.addEndpointToLoginWhitelist('/auth/iaaa')

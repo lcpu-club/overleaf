@@ -34,8 +34,9 @@ function AccountInfoSection() {
   const [isFormValid, setIsFormValid] = useState(true)
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value)
-    setIsFormValid(event.target.validity.valid)
+    // setEmail(event.target.value)
+    // setIsFormValid(event.target.validity.valid)
+    // lcpu: changing email is not allowed
   }
 
   const handleFirstNameChange = (
@@ -48,8 +49,7 @@ function AccountInfoSection() {
     setLastName(event.target.value)
   }
 
-  const canUpdateEmail =
-    !hasAffiliationsFeature && !isExternalAuthenticationSystemUsed
+  const canUpdateEmail = false
   const canUpdateNames = shouldAllowEditingDetails
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
