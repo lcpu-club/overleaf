@@ -93,3 +93,7 @@ RUN adduser --system --group --home /overleaf --no-create-home overleaf && \
 	chown www-data:www-data /var/log/overleaf && \
 	mkdir -p /var/lib/overleaf/data/template_files && \
 	chown www-data:www-data /var/lib/overleaf/data/template_files
+
+# Copy Latexmkrc
+# -----------------------
+COPY server-ce/config/latexmkrc /usr/local/share/latexmk/LatexMk
