@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       unattended-upgrades \
       build-essential wget net-tools unzip time imagemagick optipng strace nginx git python3 python-is-python3 zlib1g-dev libpcre3-dev gettext-base libwww-perl ca-certificates curl gnupg \
       qpdf \
-      aspell aspell-en aspell-af aspell-am aspell-ar aspell-ar-large aspell-bg aspell-bn aspell-br aspell-ca aspell-cs aspell-cy aspell-da aspell-de aspell-de-1901 aspell-el aspell-eo aspell-es aspell-et aspell-eu-es aspell-fa aspell-fo aspell-fr aspell-ga aspell-gl-minimos aspell-gu aspell-he aspell-hi aspell-hr aspell-hsb aspell-hu aspell-hy aspell-id aspell-is aspell-it aspell-kk aspell-kn aspell-ku aspell-lt aspell-lv aspell-ml aspell-mr aspell-nl aspell-no aspell-nr aspell-ns  aspell-pa aspell-pl aspell-pt aspell-pt-br aspell-ro aspell-ru aspell-sk aspell-sl aspell-ss aspell-st aspell-sv aspell-tl aspell-tn aspell-ts aspell-uk aspell-uz aspell-xh aspell-zu \
+      aspell aspell-en aspell-af aspell-am aspell-ar aspell-ar-large aspell-bg aspell-bn aspell-br aspell-ca aspell-cs aspell-cy aspell-da aspell-de aspell-de-1901 aspell-el aspell-eo aspell-es aspell-et aspell-eu-es aspell-fa aspell-fo aspell-fr aspell-ga aspell-gl-minimos aspell-gu aspell-he aspell-hi aspell-hr aspell-hsb aspell-hu aspell-hy aspell-id aspell-is aspell-it aspell-kk aspell-kn aspell-ku aspell-lt aspell-lv aspell-ml aspell-mr aspell-nl aspell-no aspell-nr aspell-ns  aspell-pa aspell-pl aspell-pt aspell-pt-br aspell-ro aspell-ru aspell-sk aspell-sl aspell-ss aspell-st aspell-sv aspell-tl aspell-tn aspell-ts aspell-uk aspell-uz aspell-xh aspell-zu python3-pygments \
 # upgrade base-image, batch all the upgrades together, rather than installing them on-by-one (which is slow!)
 &&  unattended-upgrade --verbose --no-minimal-upgrade-steps \
 # install Node.js https://github.com/nodesource/distributions#nodejs
@@ -48,18 +48,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # # docker build \
 #     --build-arg TEXLIVE_MIRROR=https://ctan.crest.fr/tex-archive/systems/texlive/tlnet \
 #     -f Dockerfile-base -t sharelatex/sharelatex-base .
-ARG TEXLIVE_MIRROR_2024=https://mirrors.pku.edu.cn/ctan/systems/texlive/tlnet
-ARG TEXLIVE_MIRROR_2022=https://mirrors.tuna.tsinghua.edu.cn/tex-historic-archive/systems/texlive/2022/tlnet-final
-ARG TEXLIVE_MIRROR_2020=https://mirrors.tuna.tsinghua.edu.cn/tex-historic-archive/systems/texlive/2020/tlnet-final
+ARG TEXLIVE_MIRROR=https://mirrors.pku.edu.cn/ctan/systems/texlive/tlnet
+ARG TEXLIVE_VERSION=2024
 
-# Install Texlive 2024
+# Install Texlive
 RUN mkdir /install-tl-unx \
 &&  wget --quiet https://tug.org/texlive/files/texlive.asc \
 &&  gpg --import texlive.asc \
 &&  rm texlive.asc \
-&&  wget --quiet ${TEXLIVE_MIRROR_2024}/install-tl-unx.tar.gz \
-&&  wget --quiet ${TEXLIVE_MIRROR_2024}/install-tl-unx.tar.gz.sha512 \
-&&  wget --quiet ${TEXLIVE_MIRROR_2024}/install-tl-unx.tar.gz.sha512.asc \
+&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz \
+&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz.sha512 \
+&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz.sha512.asc \
 &&  gpg --verify install-tl-unx.tar.gz.sha512.asc \
 &&  sha512sum -c install-tl-unx.tar.gz.sha512 \
 &&  tar -xz -C /install-tl-unx --strip-components=1 -f install-tl-unx.tar.gz \
@@ -71,20 +70,19 @@ RUN mkdir /install-tl-unx \
     \
 &&  /install-tl-unx/install-tl \
       -profile /install-tl-unx/texlive.profile \
-      -repository ${TEXLIVE_MIRROR_2024} \
-    \
-&&  $(find /usr/local/texlive -name tlmgr) path add \
-&&  tlmgr option repository ${TEXLIVE_MIRROR_2024} \
-&&  tlmgr update --self \
-&&  tlmgr install scheme-full \
-&&  tlmgr path add \
-&&  rm -rf /install-tl-unx
+      -repository ${TEXLIVE_MIRROR}
+
+RUN $(find /usr/local/texlive -name tlmgr) path add 
+ENV PATH="$PATH:/usr/local/texlive/${TEXLIVE_VERSION}/bin/x86_64-linux"
+RUN tlmgr option repository ${TEXLIVE_MIRROR} 
+RUN tlmgr update --self
+RUN tlmgr install scheme-full 
+RUN rm -rf /install-tl-unx
 
 # Install fonts from windows
 # --------------------------
 COPY lcpu/fonts/* /usr/local/share/fonts/
 RUN fc-cache -f -v
-
 
 # Set up overleaf user and home directory
 # -----------------------------------------
