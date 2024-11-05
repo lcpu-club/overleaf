@@ -53,9 +53,10 @@ module.exports = {
               logger.info({ email }, `User ${email} registered`);
               AuthenticationController.finishLogin(user, req, res, next);
             });
+          } else {
+            logger.info({ email }, `User ${email} logged in`);
+            AuthenticationController.finishLogin(user, req, res, next);
           }
-          logger.info({ email }, `User ${email} logged in`);
-          AuthenticationController.finishLogin(user, req, res, next);
         })
       })
     })
