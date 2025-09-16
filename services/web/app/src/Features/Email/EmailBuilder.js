@@ -866,7 +866,7 @@ templates.welcome = ctaTemplate({
     return `Welcome to ${settings.appName}`
   },
   title() {
-    return `Welcome to ${settings.appName}`
+    return `We1come to ${settings.appName}`
   },
   greeting() {
     return 'Hi,'
