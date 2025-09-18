@@ -4,7 +4,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9230:9229"
+      - "127.0.0.1:9230:9229"
     volumes:
       - ../services/clsi/app:/overleaf/services/clsi/app
       - ../services/clsi/app.js:/overleaf/services/clsi/app.js
@@ -15,7 +15,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9231:9229"
+      - "127.0.0.1:9231:9229"
     volumes:
       - ../services/chat/app:/overleaf/services/chat/app
       - ../services/chat/app.js:/overleaf/services/chat/app.js
@@ -26,7 +26,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9232:9229"
+      - "127.0.0.1:9232:9229"
     volumes:
       - ../services/contacts/app:/overleaf/services/contacts/app
       - ../services/contacts/app.js:/overleaf/services/contacts/app.js
@@ -37,7 +37,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9233:9229"
+      - "127.0.0.1:9233:9229"
     volumes:
       - ../services/docstore/app:/overleaf/services/docstore/app
       - ../services/docstore/app.js:/overleaf/services/docstore/app.js
@@ -48,7 +48,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9234:9229"
+      - "127.0.0.1:9234:9229"
     volumes:
       - ../services/document-updater/app:/overleaf/services/document-updater/app
       - ../services/document-updater/app.js:/overleaf/services/document-updater/app.js
@@ -59,7 +59,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9235:9229"
+      - "127.0.0.1:9235:9229"
     volumes:
       - ../services/filestore/app:/overleaf/services/filestore/app
       - ../services/filestore/app.js:/overleaf/services/filestore/app.js
@@ -70,7 +70,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9239:9229"
+      - "127.0.0.1:9239:9229"
     volumes:
       - ../services/history-v1/api:/overleaf/services/history-v1/api
       - ../services/history-v1/app.js:/overleaf/services/history-v1/app.js
@@ -84,7 +84,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9238:9229"
+      - "127.0.0.1:9238:9229"
     volumes:
       - ../services/references/app:/overleaf/services/references/app
       - ../services/references/config:/overleaf/services/references/config
@@ -95,7 +95,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9236:9229"
+      - "127.0.0.1:9236:9229"
     volumes:
       - ../services/notifications/app:/overleaf/services/notifications/app
       - ../services/notifications/app.js:/overleaf/services/notifications/app.js
@@ -106,7 +106,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9240:9229"
+      - "127.0.0.1:9240:9229"
     volumes:
       - ../services/project-history/app:/overleaf/services/project-history/app
       - ../services/project-history/app.js:/overleaf/services/project-history/app.js
@@ -117,7 +117,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9237:9229"
+      - "127.0.0.1:9237:9229"
     volumes:
       - ../services/real-time/app:/overleaf/services/real-time/app
       - ../services/real-time/app.js:/overleaf/services/real-time/app.js
@@ -128,15 +128,11 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "0.0.0.0:9241:9229"
+      - "127.0.0.1:9241:9229"
     volumes:
       - ../services/llm/app.js:/overleaf/services/llm/app.js
       - ../services/llm/config:/overleaf/services/llm/config
-      - ../services/llm/controllers:/overleaf/services/llm/controllers
-      - ../services/llm/models:/overleaf/services/llm/models
-      - ../services/llm/routes:/overleaf/services/llm/routes
-      - ../services/llm/services:/overleaf/services/llm/services
-      - ../services/llm/utils:/overleaf/services/llm/utils
+      - ../services/llm/controllers:/overleaf/app
       - ../services/llm/package.json:/overleaf/services/llm/package.json
 
   web:
@@ -145,7 +141,7 @@ services:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
       - SESSION_SECRET=helloworld
     ports:
-      - "0.0.0.0:9229:9229"
+      - "127.0.0.1:9229:9229"
     volumes:
       - ../services/web/app:/overleaf/services/web/app
       - ../services/web/app.mjs:/overleaf/services/web/app.mjs
