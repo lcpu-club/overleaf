@@ -10,7 +10,8 @@ COPY services/llm/package.json /overleaf/services/llm/
 COPY libraries/ /overleaf/libraries/
 COPY patches/ /overleaf/patches/
 
-RUN cd /overleaf && npm ci
+
+RUN cd /overleaf && npm install
 
 COPY services/llm/ /overleaf/services/llm/
 

@@ -6,22 +6,22 @@ export class ApiKeyMapper {
   }
 
   /**
-     * 保存或更新 llminfo 下的某条 name 信息
+     * save or update api key
      */
   async saveApiKey(userId, name, baseUrl, apiKey, models) {
-    // 检查是否已存在相同name的记录
+    // check if name already exists for the user
     const existing = await this.model.findOne(
       { _id: userId, "llminfo.name": name }
     );
 
     if (existing) {
-      throw new Error('该API Key名称已存在，请重新输入');
+      throw new Error('name aleady exists');
     }
 
-    // 检查llminfo数组是否为空
+    // check if usingLlm field exists, if not, set it to 0
     const llminfo = await this.getLlmInfo(userId);
     if (llminfo.length === 0) {
-      // 更新或添加usingLlm字段
+      // update or insert usingLlm field to 0
       await this.model.findByIdAndUpdate(
         userId,
         { $set: { usingLlm: 0 } },
@@ -29,7 +29,7 @@ export class ApiKeyMapper {
       );
     }
 
-    // 插入新记录
+    // insert new api key info
     const newInfo = {
       name,
       baseUrl,
@@ -49,22 +49,22 @@ export class ApiKeyMapper {
   }
 
   async deleteApiKey(userIdentifier, name) {
-    // 获取当前usingLlm值和llminfo数组
+    // get the user document
     const user = await this.model.findOne({ _id: userIdentifier });
     const usingLlm = user?.usingLlm;
     const llminfo = user?.llminfo || [];
 
-    // 检查要删除的name是否对应usingLlm索引
+    // check if the name exists
     const deleteIndex = llminfo.findIndex(item => item.name === name);
     if (usingLlm !== undefined && usingLlm === deleteIndex) {
-      // 如果是正在使用的LLM，先设置usingLlm为-1
+      // if the deleted key is the one being used, set usingLlm to -1
       await this.model.findOneAndUpdate(
         { _id: userIdentifier },
         { $set: { usingLlm: -1 } }
       );
     }
 
-    // 删除指定的name记录
+    // delete the api key info with the given name
     const result = await this.model.findOneAndUpdate(
       { _id: userIdentifier },
       { $pull: { llminfo: { name } } },
@@ -73,17 +73,16 @@ export class ApiKeyMapper {
     return result;
   }
   async getLlmInfo(userIdentifier) {
-    // 只查找 llminfo 字段
+    // find the llminfo array for the user
     const user = await this.model.findOne({ _id: userIdentifier }, { llminfo: 1, _id: 0 });
     return user?.llminfo || [];
   }
   async getUsingLlm(userIdentifier) {
-    // 获取当前usingLlm值
+    // get the usingLlm field for the user
     const user = await this.model.findOne({ _id: userIdentifier }, { usingLlm: 1, _id: 0 });
     return user?.usingLlm
   }
   async getUsingLlmWithInfo(userIdentifier) {
-    // 合并为一次查询；只返回 usingLlm 与 llminfo 数组
     const doc = await this.model.findOne(
       { _id: userIdentifier },
       { usingLlm: 1, llminfo: 1, _id: 0 }
@@ -92,7 +91,7 @@ export class ApiKeyMapper {
   }
 
   async updateUsingLlm(userIdentifier, usingLlm) {
-    // 更新 usingLlm 字段
+    // update the usingLlm field for the user
     await this.model.findByIdAndUpdate(
       userIdentifier,
       { $set: { usingLlm } },
@@ -102,21 +101,24 @@ export class ApiKeyMapper {
 
   async updateUsingModel(userIdentifier, name, chatOrCompletion, newModel) {
     console.log('mapper', { userIdentifier, name, chatOrCompletion, newModel });
-    // 更新指定 name 的 usingChatModel 或 usingCompletionModel 字段
-    if (chatOrCompletion === 0) {//0代表chat
+    // update the usingChatModel or usingCompletionModel for the given api key name
+    if (chatOrCompletion === 0) {//0 chat
       await this.model.findOneAndUpdate(
         { _id: userIdentifier, "llminfo.name": name },
         { $set: { "llminfo.$.usingChatModel": newModel } },
         { new: true }
       );
-    } else if (chatOrCompletion === 1) {//1代表completion
+    } else if (chatOrCompletion === 1) {//1 completion
       await this.model.findOneAndUpdate(
         { _id: userIdentifier, "llminfo.name": name },
         { $set: { "llminfo.$.usingCompletionModel": newModel } },
         { new: true }
       );
     } else {
-      throw new Error('无效的模型类型');
+      throw new Error('invalid chatOrCompletion value');
     }
   }
 }
+
+
+

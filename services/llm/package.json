@@ -25,6 +25,7 @@
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
+    "@overleaf/settings": "*",
     "axios": "^1.11.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

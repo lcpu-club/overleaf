@@ -21,7 +21,7 @@ const apiKeySchema = new mongoose.Schema({
       updatedAt: { type: Date, default: Date.now }
     }
   ],
-  usingLlm: { type: Number, default: 0 } // 0表示未使用，1表示使用中
+  usingLlm: { type: Number, default: 0 }
 });
 
 
@@ -30,3 +30,6 @@ export class ApiKeyModel {
     return mongoose.model('users', apiKeySchema);
   }
 }
+
+
+

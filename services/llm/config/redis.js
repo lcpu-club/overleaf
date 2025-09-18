@@ -4,11 +4,13 @@ import { REDIS_URL } from './settings.defaults.js';
 const redis = new Redis(REDIS_URL);
 
 redis.on('connect', () => {
-  console.log('Redis 连接成功');
+  console.log('Redis connected successfully');
 });
 
 redis.on('error', (err) => {
-  console.error('Redis 连接失败:', err);
+  console.error('Redis connection error:', err);
 });
 
 export default redis;
+
+

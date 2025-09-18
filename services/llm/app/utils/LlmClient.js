@@ -82,7 +82,7 @@ export class LlmClient {
         owned_by: model.owned_by
       }));
     } catch (error) {
-      throw new Error(`获取模型列表失败: ${error.message}`);
+      throw new Error(`get model error: ${error.message}`);
     }
   }
 
@@ -93,7 +93,7 @@ export class LlmClient {
       const response = await this._postWithRetry('/v1/chat/completions', data);
       return response;
     } catch (error) {
-      throw new Error(`聊天补全失败: ${error.message}`);
+      throw new Error(`completion error: ${error.message}`);
     }
   }
 
@@ -106,7 +106,7 @@ export class LlmClient {
       const response = await this._postWithRetry('/v1/chat/completions', data);
       return response;
     } catch (error) {
-      throw new Error(`聊天补全失败: ${error.message}`);
+      throw new Error(`chat error: ${error.message}`);
     }
   }
 
@@ -122,3 +122,6 @@ export class LlmClient {
     }
   }
 }
+
+
+

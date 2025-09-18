@@ -2,7 +2,7 @@
 import { LLMMapper } from "../mappers/llm.mapper.js";
 import { ApiKeyMapper } from '../mappers/keys.mapper.js';
 import { LlmClient } from '../utils/LlmClient.js';
-import { Base, Chat, Paraphrase, Scientific, Concise, Punchy, Split, Join, Summarize, Explain, TitleGenerator, AbstractGenerator, completion, completion2, fimCompletion } from '../config/index.js';
+import { Base, Chat, Paraphrase, Scientific, Concise, Punchy, Split, Join, Summarize, Explain, TitleGenerator, AbstractGenerator, fimCompletion } from '../../config/index.js';
 import { formatResult } from '../utils/common.js';
 class Semaphore {
   constructor(max) {
@@ -36,7 +36,7 @@ export class LLMService {
     this.clientPool = new Map();
 
     this.CLIENT_EXPIRE_MS = 10 * 60 * 1000; // 10 minutes
-    this.MAX_CONCURRENT_PER_KEY = 8; // 每个 base+apiKey 的并发上限，可调整
+    this.MAX_CONCURRENT_PER_KEY = 8; // max concurrent requests per (baseUrl, apiKey)
     this.AGENT_OPTIONS = {
       timeout: 60_000,
       keepAlive: true,
@@ -44,14 +44,14 @@ export class LLMService {
       retries: 1
     };
 
-    // 周期性清理过期 client（会调用 client.close()）
+    // periodically clean up expired clients
     setInterval(() => {
       const now = Date.now();
       for (const [key, entry] of this.clientPool.entries()) {
         if (now - entry.lastUsed > this.CLIENT_EXPIRE_MS) {
           try {
             entry.client.close();
-          } catch (e) { console.error('关闭 LlmClient 失败:', e); }
+          } catch (e) { console.error('Failed to close LlmClient:', e); }
           this.clientPool.delete(key);
         }
       }
@@ -84,7 +84,7 @@ export class LLMService {
     console.log("llmservice usingLlmInfo:",usingLlmInfo);
     const model = usingLlmInfo.models[usingLlmInfo.usingChatModel];
     console.log("llmservice model:",model);
-    if (!model) throw new Error('未设置聊天模型');
+    if (!model) throw new Error('not set chat model');
 
     const { baseUrl, apiKey } = usingLlmInfo;
     const entry = await this.getClient(baseUrl, apiKey);
@@ -97,7 +97,7 @@ export class LLMService {
     }, null, 2);
     history.push({ role: "user", content: userMessage });
 
-    // 并发控制：acquire -> 调用 -> release
+    // acquire -> call -> release
     await entry.semaphore.acquire();
     try {
       const response = await entry.client.chat(history, model.id);
@@ -105,8 +105,8 @@ export class LLMService {
       console.log("llmservice:",content);
       return content;
     } catch (error) {
-      console.error('LLM调用失败:', error);
-      throw new Error(`LLM调用失败: ${error.message}`);
+      console.error('LLM call failed:', error);
+      throw new Error(`LLM call failed: ${error.message}`);
     } finally {
       entry.lastUsed = Date.now();
       entry.semaphore.release();
@@ -130,7 +130,7 @@ export class LLMService {
       const usingLlmInfo = llmInfo[usingLlm];
 
       const model = usingLlmInfo.models[usingLlmInfo.usingCompletionModel];
-      if (!model) throw new Error('未设置代码补全模型');
+      if (!model) throw new Error('not set completion model');
 
       const { baseUrl, apiKey } = usingLlmInfo;
       const params = { leftContext, rightContext, language, maxLength, fileList, outline };
@@ -149,20 +149,19 @@ export class LLMService {
         this.llmMapper.updateUsedTokens(userIdentifier, response.usage.total_tokens);
         return formatResult(content);
       } catch (error) {
-        console.error('LLM调用失败:', error);
-        throw new Error(`LLM调用失败: ${error.message}`);
+        console.error('LLM call failed:', error);
+        throw new Error(`LLM call failed: ${error.message}`);
       } finally {
         entry.lastUsed = Date.now();
         entry.semaphore.release();
       }
     } catch (error) {
-      console.error("流式请求初始化失败:", error);
       throw error;
     }
   }
 
   /**
-   * 返回 client 池中的 entry (client, semaphore, lastUsed)
+   * return { client, semaphore, lastUsed }
    */
   async getClient(baseUrl, apiKey) {
     const key = `${baseUrl}_${apiKey}`;
@@ -173,7 +172,7 @@ export class LLMService {
       return entry;
     }
 
-    // 创建新的 LlmClient，注入 agent/keepAlive 配置
+    // create new client
     const client = new LlmClient(baseUrl, apiKey, this.AGENT_OPTIONS);
     const semaphore = new Semaphore(this.MAX_CONCURRENT_PER_KEY);
     const entry = { client, semaphore, lastUsed: now };
@@ -181,8 +180,10 @@ export class LLMService {
     this.clientPool.set(key, entry);
     return entry;
   }
-  //<PRE>${fileContext} \n${heading}${prefix} <SUF> ${suffix} <MID>
+
   buildPrompt(params) {
     return `\n\n<FILELIST>${JSON.stringify(params.fileList)}</FILELIST>\n<QUERY>${params.leftContext}{{FILL_HERE}}${params.rightContext}\n</QUERY>\nTASK: Fill the {{FILL_HERE}} hole. Answer only with the CORRECT completion, and NOTHING ELSE. Do it now.<COMPLETION>`;
   }
 }
+
+

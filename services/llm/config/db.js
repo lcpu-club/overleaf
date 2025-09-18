@@ -1,23 +1,22 @@
-import mongoose from 'mongoose'; // 新增
+import mongoose from 'mongoose';
 import {MONGO_URL} from './settings.defaults.js';
 
-// 数据库配置
 export const dbConfig = {
   uri: MONGO_URL,
   options: {
-    connectTimeoutMS: 30000, // 连接超时时间
-    socketTimeoutMS: 45000,  // 套接字超时时间
+    connectTimeoutMS: 30000, // connection timeout
+    socketTimeoutMS: 45000,  // socket timeout
   }
 };
 
 
-// 导出连接函数并传递配置
+// export connection function with configuration
 export default async function connectDatabase() {
   try {
-    await mongoose.connect(dbConfig.uri, dbConfig.options); // 使用 mongoose.connect
-    console.log('MongoDB 连接成功');
+    await mongoose.connect(dbConfig.uri, dbConfig.options);
+    console.log('MongoDB connection successful');
   } catch (error) {
-    console.error('MongoDB 连接失败:', error);
+    console.error('MongoDB connection failed:', error);
     process.exit(1);
   }
 }

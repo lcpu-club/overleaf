@@ -7,10 +7,10 @@ export class KeysService {
   }
 
   async saveApiKey(userIdentifier, name, baseUrl, apiKey) {
-    if (!userIdentifier) throw new Error('用户标识不能为空');
-    if (!name) throw new Error('名称不能为空');
-    if (!baseUrl) throw new Error('Base URL不能为空');
-    if (!apiKey) throw new Error('API Key不能为空');
+    if (!userIdentifier) throw new Error('userIdentifier cannot be empty');
+    if (!name) throw new Error('name cannot be empty');
+    if (!baseUrl) throw new Error('Base URL cannot be empty');
+    if (!apiKey) throw new Error('API Key cannot be empty');
     try {
       const client = new LlmClient(baseUrl, apiKey);
       const models = await client.listModels();
@@ -37,7 +37,7 @@ export class KeysService {
     }));
   }
   async getUsingLlm(userIdentifier) {
-    // 获取当前usingLlm值
+    // get the index of using llm
     const usingLlm = await this.apiKeyMapper.getUsingLlm(userIdentifier);
     return usingLlm;
   }
@@ -51,3 +51,6 @@ export class KeysService {
     await this.apiKeyMapper.updateUsingModel(userIdentifier, name, chatOrCompletion,newModel);
   }
 }
+
+
+

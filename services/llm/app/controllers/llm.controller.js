@@ -24,7 +24,7 @@ export class LLMController {
     }
   }
   /**
-   * 处理补全请求
+   * completion
    */
   async completion(req, res) {
     try {
@@ -43,8 +43,11 @@ export class LLMController {
         data: content
       });
     } catch (err) {
-      console.error('代码补全错误:', err);
+      console.error('completion error:', err);
       res.status(400).json({ success: false, data:err.message  });
     }
   }
 }
+
+
+

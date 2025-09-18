@@ -2,8 +2,6 @@ version: '2.3'
 
 services:
 
-
-  # MongoDB 数据库服务
   mongo:
     image: mongo:6.0.13
     command: --replSet overleaf
@@ -44,3 +42,6 @@ services:
   #   volumes:
   #     - ./logs:/overleaf/services/llm/logs
   #   working_dir: /overleaf/services/llm
+
+
+  
