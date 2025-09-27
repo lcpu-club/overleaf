@@ -126,7 +126,7 @@ function CodeMirrorEditor() {
     })
 
 
-    try { (window as any).__cm_view_for_debug = view } catch (e)
+    try { (window as any).__cm_view_for_debug = view } catch (e){}
 
     viewRef.current = view
 

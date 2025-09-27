@@ -132,7 +132,7 @@ services:
     volumes:
       - ../services/llm/app.js:/overleaf/services/llm/app.js
       - ../services/llm/config:/overleaf/services/llm/config
-      - ../services/llm/controllers:/overleaf/app
+      - ../services/llm/app:/overleaf/app
       - ../services/llm/package.json:/overleaf/services/llm/package.json
 
   web:
