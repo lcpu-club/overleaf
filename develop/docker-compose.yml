@@ -92,11 +92,9 @@ services:
     image: mongo:5
     command: --replSet overleaf
     ports:
-      - "0.0.0.0:27017:27017" # for debugging
+      - "127.0.0.1:27017:27017" # for debugging
     volumes:
       - mongo-data:/data/db
-    extra_hosts:
-      - "host.docker.internal:host-gateway"  # 添加主机网关（可选，用于容器访问宿主机）
 
   references:
     build:
@@ -131,7 +129,7 @@ services:
   redis:
     image: redis:5
     ports:
-      - "0.0.0.0:6379:6379" # for debugging
+      - "127.0.0.1:6379:6379" # for debugging
     volumes:
       - redis-data:/data
 
@@ -143,6 +141,7 @@ services:
       - dev.env
     volumes:
       - spelling-cache:/overleaf/services/spelling/cache
+
   llm:
     build:
       context: ..
@@ -196,6 +195,6 @@ services:
       target: dev
     command: ["npx", "webpack", "serve", "--config", "webpack.config.dev-env.js"]
     ports:
-      - "0.0.0.0:80:3808"
+      - "127.0.0.1:80:3808"
     volumes:
       - ./webpack.config.dev-env.js:/overleaf/services/web/webpack.config.dev-env.js

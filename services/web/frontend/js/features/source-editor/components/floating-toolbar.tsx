@@ -22,7 +22,7 @@ function formatTime(d = new Date()) {
   return `${hh}:${mm}`
 }
 
-// marked 基础配置
+
 marked.setOptions({
   breaks: true,
   gfm: true
@@ -65,25 +65,25 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
     getSelectedText: () => selectedText
   }))
 
-  // 输入框自适应高度（不出现竖直滚动条）
+
   useEffect(() => {
     const textarea = inputRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      const maxHeight = 200; // 可按需调整或移除限制
+      const maxHeight = 200;
       const newHeight = Math.min(textarea.scrollHeight, maxHeight);
       textarea.style.height = `${newHeight}px`;
     }
   }, [annotation]);
   
-  // 聚焦输入框
+
   useEffect(() => {
     if (visible && inputRef.current) {
       inputRef.current.focus()
     }
   }, [visible])
 
-  // 滚动到底部
+
   useEffect(() => {
     const el = chatScrollRef.current
     if (el) {
@@ -106,7 +106,6 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
     const text = annotation.trim()
     if (!text) return
 
-    // 先显示用户消息
     appendMessage({ role: 'user', content: text })
     setAnnotation('')
 
@@ -123,7 +122,7 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
           }
         }
       } catch (e) {
-        console.error('获取文件列表时出错:', e)
+        console.error('get fileList error:', e)
       }
 
       // Get outline content
@@ -138,7 +137,7 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
           }
         }
       } catch (e) {
-        console.error('获取大纲内容时出错:', e)
+        console.error('get outline error:', e)
       }
 
       // Prepare request body
@@ -161,7 +160,7 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
           body: JSON.stringify(requestBody)
         });
       } catch (error) {
-        console.error('使用credentials请求出错:', error);
+        console.error(error);
       }
 
       if (response) {
@@ -172,16 +171,16 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
             : JSON.stringify(result.data)
           appendMessage({ role: 'assistant', content: dataMd })
         } else {
-          console.error('API请求失败:', result)
-          appendMessage({ role: 'assistant', content: '抱歉，服务暂时不可用，请稍后重试。' })
+          console.error('API quest fail:', result)
+          appendMessage({ role: 'assistant', content: 'sorry, service is unavailable' })
         }
       } else {
         console.error('API request failed: No response received')
-        appendMessage({ role: 'assistant', content: '网络异常：未收到服务器响应。' })
+        appendMessage({ role: 'assistant', content: 'sorry, no response from server' })
       }
     } catch (error) {
-      console.error('请求出错:', error)
-      appendMessage({ role: 'assistant', content: '请求出错，请检查网络或稍后再试。' })
+      console.error('request failed:', error)
+      appendMessage({ role: 'assistant', content: 'sorry, request failed, please check your network or try again later.' })
     }
   }
 
@@ -195,17 +194,17 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
   }
 
   const handleClose = () => {
-    setMessages([])   // 清空聊天记录
-    setVisible(false) // 关闭
+    setMessages([])
+    setVisible(false)
   }
 
-  // 渲染消息为 HTML
+
   const renderMessageHtml = (md: string) => {
     const html = marked.parse(md) as string
     return html
   }
 
-  // 复制代码块：事件代理
+
   const onClickCopy = async (e: React.MouseEvent) => {
     const target = e.target as HTMLElement
     if (target && target.matches('.ol-copy-btn')) {
@@ -217,24 +216,23 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
         await navigator.clipboard.writeText(text)
         target.classList.add('copied')
         const original = target.textContent
-        target.textContent = '已复制'
+        target.textContent = 'copied'
         setTimeout(() => {
-          target.textContent = original || '复制'
+          target.textContent = original || 'copy'
           target.classList.remove('copied')
         }, 1200)
       } catch (err) {
-        console.error('复制失败:', err)
-        target.textContent = '复制失败'
+        console.error('copy fail:', err)
+        target.textContent = 'copy fail'
         setTimeout(() => {
-          target.textContent = '复制'
+          target.textContent = 'copy'
         }, 1200)
       }
     }
   }
 
-  // 将代码块包一层，插入复制按钮
   const enhanceCodeBlocks = (html: string) => {
-    // 用 DOMParser 解析并改造结构
+
     const parser = new DOMParser()
     const doc = parser.parseFromString(`<div class="__root">${html}</div>`, 'text/html')
     const pres = doc.querySelectorAll('pre')
@@ -248,7 +246,7 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
       const btn = doc.createElement('button')
       btn.className = 'ol-copy-btn'
       btn.type = 'button'
-      btn.textContent = '复制'
+      btn.textContent = 'copy'
       wrapper.appendChild(btn)
     })
 
@@ -287,7 +285,7 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
           value={annotation}
           onChange={e => setAnnotation(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="询问AI助手（Enter 发送，Shift+Enter 换行）..."
+          placeholder="Ask AI Assistant (Enter to send, Shift+Enter to newline)..."
           rows={1}
           style={{
             minHeight: '36px',
@@ -302,9 +300,7 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
             background: '#f9fafb',
             color: '#1f2937',
             transition: 'height 0.2s ease',
-            // 关键：避免竖向滚动条，依靠自适应高度
             overflowY: 'hidden',
-            // 避免横向滚动条
             overflowX: 'hidden',
             outline: 'none'
           }}
@@ -327,7 +323,7 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
             fontSize: '14px'
           }}
         >
-          发送
+          send
         </button>
         <button 
           onClick={handleClose}
@@ -347,11 +343,10 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
             fontSize: '14px'
           }}
         >
-          关闭
+          close
         </button>
       </div>
 
-      {/* 聊天展示区 */}
       <div
         ref={chatScrollRef}
         className="ol-chat-container"
@@ -360,7 +355,6 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
           width: '100%',
           maxHeight: '260px',
           overflowY: 'auto',
-          // 关键：禁用横向滚动
           overflowX: 'hidden',
           background: '#495365',
           borderRadius: '12px',
@@ -411,7 +405,6 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
             color: #1F2937;
             background: #FFFFFF;
             box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-            /* 关键：防止横向滚动 */
             word-break: break-word;
             overflow-wrap: anywhere;
             position: relative;
@@ -433,14 +426,13 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
           .ol-msg-inner.user {
             flex-direction: row-reverse;
           }
-          /* Markdown 样式（marked 输出） */
+
           .ol-bubble h1, .ol-bubble h2, .ol-bubble h3 {
             margin: 6px 0 8px 0;
             color: #111827;
           }
           .ol-bubble p {
             margin: 6px 0;
-            /* 防止 p 内过长单词撑出横向滚动 */
             word-break: break-word;
             overflow-wrap: anywhere;
           }
@@ -448,7 +440,6 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
             margin: 6px 0;
             padding-left: 20px;
           }
-          /* 代码块允许换行且不出现水平滚动条 */
           .ol-bubble pre {
             background: #0B1020;
             color: #E5E7EB;
@@ -458,7 +449,7 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
             white-space: pre-wrap;
             word-break: break-word;
             overflow-x: hidden;
-            overflow-y: auto; /* 代码块内部内容过长时可纵向滚动 */
+            overflow-y: auto;
             max-height: 320px;
           }
           .ol-bubble code {
@@ -470,7 +461,6 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
             white-space: pre-wrap;
             word-break: break-word;
           }
-          /* 代码块外层包装，定位复制按钮与语言徽标 */
           .ol-code-wrap {
             position: relative;
           }
@@ -514,22 +504,21 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
 
         {messages.length === 0 && (
           <div style={{ color: 'rgba(255,255,255,0.8)', textAlign: 'center', fontSize: '13px', padding: '8px 0' }}>
-            选中一段文本，向 AI 提问吧～
+            AI Assistant is ready to help you.
           </div>
         )}
 
         {messages.map(m => {
           const isUser = m.role === 'user'
-          const initials = isUser ? '我' : 'AI'
-          // Markdown -> HTML
+          const initials = isUser ? 'I' : 'AI'
+
           const rawHtml = renderMessageHtml(m.content)
-          // 为代码块注入复制按钮
           const enhancedHtml = enhanceCodeBlocks(rawHtml)
 
           return (
             <div key={m.id} className={`ol-chat-msg ${isUser ? 'user' : 'assistant'}`}>
               <div className={`ol-msg-inner ${isUser ? 'user' : ''}`}>
-                <div className="ol-avatar" title={isUser ? '我' : '助手'}>{initials}</div>
+                <div className="ol-avatar" title={isUser ? 'I' : 'AI'}>{initials}</div>
                 <div
                   className={`ol-bubble ${isUser ? 'user' : ''}`}
                   dangerouslySetInnerHTML={{ __html: enhancedHtml }}

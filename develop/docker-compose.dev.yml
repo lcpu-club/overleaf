@@ -139,7 +139,6 @@ services:
     command: ["node", "--watch", "app.mjs", "--watch-locales"]
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
-      - SESSION_SECRET=helloworld
     ports:
       - "127.0.0.1:9229:9229"
     volumes:

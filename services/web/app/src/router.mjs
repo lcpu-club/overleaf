@@ -903,8 +903,8 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     AuthorizationMiddleware.ensureUserCanReadProject,
     Settings.allowAnonymousReadAndWriteSharing
       ? (req, res, next) => {
-        next()
-      }
+         next()
+       }
       : AuthenticationController.requireLogin(),
     MetaController.getMetadata
   )
@@ -913,8 +913,8 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     AuthorizationMiddleware.ensureUserCanReadProject,
     Settings.allowAnonymousReadAndWriteSharing
       ? (req, res, next) => {
-        next()
-      }
+         next()
+       }
       : AuthenticationController.requireLogin(),
     MetaController.broadcastMetadataForDoc
   )
@@ -1364,7 +1364,7 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
       const sendRes = _.once(function (statusCode, message) {
         res.status(statusCode)
         plainTextResponse(res, message)
-        ClsiCookieManager.clearServerId(projectId, testUserId, () => { })
+        ClsiCookieManager.clearServerId(projectId, testUserId, () => {})
       }) // force every compile to a new server
       // set a timeout
       let handler = setTimeout(function () {

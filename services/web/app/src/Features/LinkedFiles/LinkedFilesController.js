@@ -46,7 +46,7 @@ const ProjectOutputFileAgent = require('./ProjectOutputFileAgent')
 const ProjectFileAgent = require('./ProjectFileAgent')
 const UrlAgent = require('./UrlAgent')
 
-async function createLinkedFile(req,res, next) {
+async function createLinkedFile(req, res, next) {
   const { project_id: projectId } = req.params
   const { name, provider, data, parent_folder_id: parentFolderId } = req.body
   const userId = SessionManager.getLoggedInUserId(req.session)

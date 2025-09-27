@@ -21,7 +21,7 @@ import {
   CodeMirrorViewContext,
 } from './codemirror-context'
 
-// 关键：同时导入 extension 工厂 与 plugin spec
+
 import { inlineCompletionExtension, INLINE_COMPLETION_PLUGIN } from './llm-completion'
 
 // TODO: remove this when definitely no longer used
@@ -107,11 +107,11 @@ function CodeMirrorEditor() {
 
         timer.end(trs, view)
 
-        // --- NEW: 检查 plugin 是否仍存在（有可能外部逻辑替换了 state，导致 plugin 被销毁）
+
         try {
           const hasPlugin = !!(view.plugin && view.plugin(INLINE_COMPLETION_PLUGIN))
           if (!hasPlugin) {
-            // 使用微任务异步追加 extension，避免在 transaction 执行期间嵌套 dispatch
+
             setTimeout(() => {
               try {
                 view.dispatch({
@@ -129,12 +129,12 @@ function CodeMirrorEditor() {
       },
     })
 
-    // expose for debug: 可以在控制台使用 window.__cm_view_for_debug
+
     try { (window as any).__cm_view_for_debug = view } catch (e) { /* ignore */ }
 
     viewRef.current = view
 
-    // 初次创建后也尝试一次 append（兼容早期时序）
+
     setTimeout(() => {
       try {
         view.dispatch({
@@ -146,7 +146,7 @@ function CodeMirrorEditor() {
       }
     }, 50);
 
-    // 同步把 React state 跟 editor 的实际 state 对齐（第一次）
+
     if (isMounted.current) {
       setState(view.state)
     }
