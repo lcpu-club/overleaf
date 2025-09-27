@@ -123,8 +123,6 @@ services:
       dockerfile: services/real-time/Dockerfile
     env_file:
       - dev.env
-    environment:
-      - SESSION_SECRET=helloworld
 
   redis:
     image: redis:5
@@ -165,7 +163,6 @@ services:
       - EMAIL_CONFIRMATION_DISABLED=true
       - NODE_ENV=development
       - OVERLEAF_ALLOW_PUBLIC_ACCESS=true
-      - SESSION_SECRET=helloworld
     command: ["node", "app.mjs"]
     volumes:
       - sharelatex-data:/var/lib/overleaf

@@ -92,15 +92,11 @@ function CodeMirrorEditor() {
     // @ts-ignore (disable EditContext-based editing until stable)
     EditorView.EDIT_CONTEXT = false
 
-    // Use the existing state object (keep other extensions intact)
     const view = new EditorView({
       state,
       dispatchTransactions: (trs: readonly Transaction[]) => {
         timer.start(trs)
-        // apply transaction(s)
         view.update(trs)
-
-        // sync react state
         if (isMounted.current) {
           setState(view.state)
         }
@@ -130,7 +126,7 @@ function CodeMirrorEditor() {
     })
 
 
-    try { (window as any).__cm_view_for_debug = view } catch (e) { /* ignore */ }
+    try { (window as any).__cm_view_for_debug = view } catch (e)
 
     viewRef.current = view
 
