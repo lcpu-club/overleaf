@@ -269,7 +269,6 @@ const FloatingToolbar = forwardRef<FloatingToolbarHandle, {}>((_, ref) => {
         zIndex: 9999
       }}
     >
-      {/* 输入区 */}
       <div 
         className="ol-cm-floating-toolbar-content"
         style={{

@@ -55,7 +55,7 @@ function SettingsPageContent() {
         </div>
         <div>
           <ManagedAccountAlert />
-          <EmailsSection /> 
+          <EmailsSection />
           <SSOAlert />
           <OLRow>
             <OLCol lg={5}>
@@ -66,7 +66,6 @@ function SettingsPageContent() {
             </OLCol>
           </OLRow>
           <LlmUsageTable/>
-          
           <hr />
           <SecuritySection />
           <SplitTestProvider>
