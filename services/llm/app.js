@@ -4,7 +4,7 @@ import connectDB from './config/db.js';
 import keysRoutes from './app/routes/keys.routes.js';
 import llmRoutes from './app/routes/llm.routes.js';
 import cookieParser from 'cookie-parser';
-import { PORT,LISTEN_ADDRESS}  from './config/settings.defaults.js';
+import { PORT,LISTEN_ADDRESS}  from './config/settings.defaults.cjs';
 
 const app = express();
 

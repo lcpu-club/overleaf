@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
-import { REDIS_URL } from './settings.defaults.js'; 
+import settings from '@overleaf/settings'
 
-const redis = new Redis(REDIS_URL);
+const redis = new Redis(settings.REDIS_URL);
 
 redis.on('connect', () => {
   console.log('Redis connected successfully');

@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
-import {MONGO_URL} from './settings.defaults.js';
+import settings from '@overleaf/settings'
 
 export const dbConfig = {
-  uri: MONGO_URL,
+  uri: settings.MONGO_URL,
   options: {
     connectTimeoutMS: 30000, // connection timeout
     socketTimeoutMS: 45000,  // socket timeout
