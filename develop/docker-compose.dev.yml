@@ -130,10 +130,10 @@ services:
     ports:
       - "127.0.0.1:9241:9229"
     volumes:
+      - ../services/llm/app:/overleaf/app
       - ../services/llm/app.js:/overleaf/services/llm/app.js
       - ../services/llm/config:/overleaf/services/llm/config
-      - ../services/llm/app:/overleaf/app
-      - ../services/llm/package.json:/overleaf/services/llm/package.json
+      
 
   web:
     command: ["node", "--watch", "app.mjs", "--watch-locales"]

@@ -733,7 +733,7 @@ export function inlineCompletionExtension(): Extension {
     Prec.highest(
       keymap.of([
         {
-          key: "Mod-Enter", // 在 macOS:Cmd-Enter, Windows/Linux:Ctrl-Enter
+          key: "Mod-Enter", //macOS:Cmd-Enter, Windows/Linux:Ctrl-Enter
           run: (view) => {
             const plugin = view.plugin(INLINE_COMPLETION_PLUGIN);
             return plugin ? plugin.accept() : false;

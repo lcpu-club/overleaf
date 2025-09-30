@@ -14,12 +14,12 @@ export class KeysService {
     try {
       const client = new LlmClient(baseUrl, apiKey);
       const models = await client.listModels();
-      console.log(models);
       await this.apiKeyMapper.saveApiKey(userIdentifier, name, baseUrl, apiKey, models);
     } catch (error) {
       throw error;
     }
   }
+  
   async deleteApiKey(userIdentifier, name) {
     await this.apiKeyMapper.deleteApiKey(userIdentifier, name);
   }

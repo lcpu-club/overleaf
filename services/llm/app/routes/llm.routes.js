@@ -2,12 +2,12 @@ import express from 'express';
 import { LLMController } from '../controllers/llm.controller.js';
 
 const router = express.Router();
-const controller = new LLMController(); // 创建控制器实例
+const controller = new LLMController(); //create controller instance
 
-// 调用LLM
+// call llm to chat
 router.post('/llm', controller.chat.bind(controller));
 
-// 补全
+// call llm to do completion
 router.post('/completion', controller.completion.bind(controller));
 
 

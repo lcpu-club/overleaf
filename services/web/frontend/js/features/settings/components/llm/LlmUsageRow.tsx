@@ -27,7 +27,7 @@ export default function LlmUsageRow({
   return (
     <tr>
       <td><span className="llm-name">{name}</span></td>
-      {/* Chat模型下拉框 */}
+      {/* Chat model dropdown */}
       <td>
         <select
           value={chatModel}
@@ -41,7 +41,7 @@ export default function LlmUsageRow({
           ))}
         </select>
       </td>
-      {/* 代码补全模型下拉框 */}
+      {/* Code completion model dropdown */}
       <td>
         <select
           value={codeModel}
@@ -58,7 +58,7 @@ export default function LlmUsageRow({
       <td><span className="llm-badge">{used}</span></td>
       <td>
         <button className="btn btn-danger btn-sm" onClick={onDelete}>
-          删除
+          delete
         </button>
       </td>
     </tr>

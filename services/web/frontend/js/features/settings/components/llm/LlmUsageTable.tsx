@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import LlmUsageRow from './LlmUsageRow';
 
-// 定义数据类型
+// define types
 type ModelInfo = {
   id: string;
   object: string;
@@ -18,10 +18,10 @@ type UsageInfo = {
   models: ModelInfo[];
 };
 
-// 错误提示组件
+// error alert component
 const ErrorAlert: React.FC<{ message: string; onClose: () => void }> = ({ message, onClose }) => {
   useEffect(() => {
-    // 2秒后自动关闭
+    // 2 seconds auto close
     const timer = setTimeout(onClose, 2000);
     return () => clearTimeout(timer);
   }, [onClose]);
@@ -56,21 +56,20 @@ export default function LlmUsageTable() {
   const [error, setError] = useState<string | null>(null);
   const isLoading = useRef(false);
   const lastFetchTime = useRef(0);
-  const MIN_FETCH_INTERVAL = 3000; // 最小请求间隔3秒
+  const MIN_FETCH_INTERVAL = 3000; // minimum interval between fetches in ms
 
-  // 显示错误信息
+  // show error message
   const showError = useCallback((message: string) => {
     setError(message);
   }, []);
 
-  // 关闭错误信息
+  // close error message
   const closeError = useCallback(() => {
     setError(null);
   }, []);
 
-  // 获取模型列表和当前应用服务商 - 使用useCallback固定函数引用
+  // fetch model list and current application provider
   const fetchUsageData = useCallback(async () => {
-    // 防抖处理：防止短时间内多次请求
     const now = Date.now();
     if (isLoading.current || now - lastFetchTime.current < MIN_FETCH_INTERVAL) {
       return;
@@ -85,14 +84,13 @@ export default function LlmUsageTable() {
         fetch('/api/v1/llm/usingLlm', { credentials: 'include', cache: 'no-store' }),
       ]);
 
-      // 检查响应状态
       if (!keysRes.ok) {
-        showError(`获取服务商列表失败: HTTP ${keysRes.status}`);
+        showError(`get service provider list failed: HTTP ${keysRes.status}`);
         return;
       }
       
       if (!usingRes.ok) {
-        showError(`获取当前应用服务商失败: HTTP ${usingRes.status}`);
+        showError(`get current application provider failed: HTTP ${usingRes.status}`);
         return;
       }
 
@@ -101,7 +99,7 @@ export default function LlmUsageTable() {
         keysJson = await keysRes.json();
       } catch (e) {
         console.error('keys response is not JSON', e);
-        showError('获取服务商列表失败: 无效的响应格式');
+        showError('get service provider list failed: invalid response format');
         return;
       }
 
@@ -132,7 +130,7 @@ export default function LlmUsageTable() {
         setUsageList(newUsageList);
       } else if (keysJson && !keysJson.success) {
         console.warn('fetch keys failed:', keysJson);
-        showError(`获取服务商列表失败: ${keysJson.data || keysJson.message || '未知错误'}`);
+        showError(`get service provider list failed: ${keysJson.data || keysJson.message || 'unknown error'}`);
       }
 
       let usingJson: any;
@@ -140,7 +138,7 @@ export default function LlmUsageTable() {
         usingJson = await usingRes.json();
       } catch (e) {
         console.error('usingLlm response is not JSON', e);
-        showError('获取当前应用服务商失败: 无效的响应格式');
+        showError('get current application provider failed: invalid response format');
         return;
       }
 
@@ -148,24 +146,22 @@ export default function LlmUsageTable() {
         setUsingIdx(usingJson.data);
       } else if (usingJson && !usingJson.success) {
         console.warn('fetch usingLlm failed:', usingJson);
-        showError(`获取当前应用服务商失败: ${usingJson.data || usingJson.message || '未知错误'}`);
+        showError(`get current application provider failed: ${usingJson.data || usingJson.message || 'unknown error'}`);
         setUsingIdx(-1);
       }
     } catch (err) {
       console.error('fetchUsageData error:', err);
-      showError('网络错误，获取服务商列表失败');
+      showError('network error, get service provider list failed');
     } finally {
       isLoading.current = false;
     }
-  }, [showError]); // 仅依赖showError
+  }, [showError]);
 
-  // 初始加载一次数据，不添加fetchUsageData作为依赖
   useEffect(() => {
     fetchUsageData();
-    // 空依赖数组确保只在组件挂载时执行一次
   }, []);
 
-  // 切换应用服务商
+  // change current application provider
   const handleUsingChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     try {
       const idx = Number(e.target.value);
@@ -184,30 +180,28 @@ export default function LlmUsageTable() {
 
       const data = await response.json();
       if (!data.success) {
-        throw new Error(data.message || '设置失败');
+        throw new Error(data.message || 'change failed');
       }
     } catch (err) {
       console.error('set usingLlm failed', err);
-      showError('设置当前服务商失败');
-      // 失败时回滚状态
+      showError('change current application provider failed');
       await fetchUsageData();
     }
   };
 
-  // 处理Chat模型变更
+  // control chat model change
   const handleChatModelChange = async (name: string, newModel: string) => {
     try {
-      // 先更新UI
       setUsageList((prev) => prev.map((u) => (u.name === name ? { ...u, chatModel: newModel } : u)));
 
       const provider = providers.find((p) => p.provider === name);
       if (!provider) {
-        throw new Error('未找到对应的服务商');
+        throw new Error('failed to find provider');
       }
 
       const modelIndex = provider.chatModels.indexOf(newModel);
       if (modelIndex === -1) {
-        throw new Error('未找到对应的模型');
+        throw new Error('failed to find corresponding model');
       }
 
       const response = await fetch('/api/v1/llm/usingModel', {
@@ -223,29 +217,28 @@ export default function LlmUsageTable() {
 
       const data = await response.json();
       if (!data.success) {
-        throw new Error(data.message || '设置失败');
+        throw new Error(data.message || 'change failed');
       }
     } catch (err) {
       console.error('usingModel PUT failed', err);
-      showError('设置 Chat 模型失败');
-      // 失败时回滚状态
+      showError('change Chat model failed');
       await fetchUsageData();
     }
   };
 
-  // 处理代码补全模型变更
+  // condtrol code model change
   const handleCodeModelChange = async (name: string, newModel: string) => {
     try {
       setUsageList((prev) => prev.map((u) => (u.name === name ? { ...u, codeModel: newModel } : u)));
 
       const provider = providers.find((p) => p.provider === name);
       if (!provider) {
-        throw new Error('未找到对应的服务商');
+        throw new Error('failed to find provider');
       }
 
       const modelIndex = provider.codeModels.indexOf(newModel);
       if (modelIndex === -1) {
-        throw new Error('未找到对应的模型');
+        throw new Error('failed to find corresponding model');
       }
 
       const response = await fetch('/api/v1/llm/usingModel', {
@@ -261,17 +254,16 @@ export default function LlmUsageTable() {
 
       const data = await response.json();
       if (!data.success) {
-        throw new Error(data.message || '设置失败');
+        throw new Error(data.message || 'change failed');
       }
     } catch (err) {
       console.error('usingModel PUT failed', err);
-      showError('设置代码补全模型失败');
-      // 失败时回滚状态
+      showError('change code model failed');
       await fetchUsageData();
     }
   };
 
-  // 处理删除
+  // control delete provider
   const handleDelete = async (name: string) => {
     try {
       const res = await fetch('/api/v1/llm/keys', {
@@ -287,31 +279,30 @@ export default function LlmUsageTable() {
 
       const data = await res.json().catch(() => ({}));
       if (data && data.success === false) {
-        throw new Error(data.message || data.data || '后端返回失败');
+        throw new Error(data.message || data.data || 'failed to delete');
       }
 
       await fetchUsageData();
     } catch (err) {
-      console.error('删除请求出错', err);
-      showError('删除失败，请检查网络');
+      console.error('delete request failed', err);
+      showError('delete failed, please check your network');
       await fetchUsageData();
     }
   };
 
-  // 添加新的服务商
+  // control add provider
   const handleAddProvider = async () => {
     try {
-      // 表单验证
       if (!form.name.trim()) {
-        showError('请输入服务商名称');
+        showError('please enter a name');
         return;
       }
       if (!form.baseUrl.trim()) {
-        showError('请输入Base Url');
+        showError('please enter a Base Url');
         return;
       }
       if (!form.apiKey.trim()) {
-        showError('请输入API Key');
+        showError('please enter an API Key');
         return;
       }
 
@@ -328,7 +319,7 @@ export default function LlmUsageTable() {
 
       const data = await res.json().catch(() => ({}));
       if (!data.success) {
-        throw new Error(data.message || data.data || '添加失败');
+        throw new Error(data.message || data.data || 'failed to add');
       }
 
       setShowDialog(false);
@@ -336,7 +327,7 @@ export default function LlmUsageTable() {
       await fetchUsageData();
     } catch (error) {
       console.error('Error adding provider:', error);
-      showError('添加失败: 请检查输入信息');
+      showError('add service provider failed, please check your network and input');
     }
   };
 
@@ -435,7 +426,6 @@ export default function LlmUsageTable() {
           .llm-table thead th, .llm-table tbody td { padding: 10px 12px; }
         }
 
-        /* 错误提示动画 */
         @keyframes fadeIn {
           from { opacity: 0; transform: translate(-50%, -20px); }
           to { opacity: 1; transform: translate(-50%, 0); }
@@ -446,22 +436,22 @@ export default function LlmUsageTable() {
         }
       `}</style>
 
-      {/* 错误提示 */}
+      {/* error message */}
       {error && <ErrorAlert message={error} onClose={closeError} />}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
         <button className="btn btn-primary" onClick={() => setShowDialog(true)}>
-          添加服务商
+          Add
         </button>
         <div>
-          <label style={{ marginRight: 8 }}>正在应用的服务商：</label>
-          <select 
-            value={usingIdx} 
+          <label style={{ marginRight: 8 }}>Current Service Provider:</label>
+          <select
+            value={usingIdx}
             onChange={handleUsingChange} 
             className="llm-select"
             disabled={usageList.length === 0}
           >
-            <option value={-1}>未选择</option>
+            <option value={-1}>Not Selected</option>
             {usageList.map((item, idx) => (
               <option key={item.name} value={idx}>
                 {item.name}
@@ -495,47 +485,47 @@ export default function LlmUsageTable() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h4>添加服务商</h4>
+            <h4>Add Service Provider</h4>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 4 }}>名称：</label>
-              <input 
-                type="text" 
-                value={form.name} 
-                onChange={(e) => setForm({ ...form, name: e.target.value })} 
-                style={{ width: '100%', padding: 6 }} 
-                placeholder="请输入服务商名称" 
+              <label style={{ display: 'block', marginBottom: 4 }}>Name:</label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                style={{ width: '100%', padding: 6 }}
+                placeholder="service provider name"
               />
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 4 }}>Base Url：</label>
+              <label style={{ display: 'block', marginBottom: 4 }}>Base Url:</label>
               <input 
                 type="text" 
                 value={form.baseUrl} 
                 onChange={(e) => setForm({ ...form, baseUrl: e.target.value })} 
                 style={{ width: '100%', padding: 6 }} 
-                placeholder="例如：https://api.openai.com" 
+                placeholder="example:https://api.openai.com" 
               />
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 4 }}>API Key：</label>
+              <label style={{ display: 'block', marginBottom: 4 }}>API Key:</label>
               <input 
                 type="text" 
                 value={form.apiKey} 
                 onChange={(e) => setForm({ ...form, apiKey: e.target.value })} 
                 style={{ width: '100%', padding: 6 }} 
-                placeholder="请输入API密钥" 
+                placeholder="your API Key" 
               />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button className="btn btn-success" onClick={handleAddProvider}>
-                确认添加
+                Confirm
               </button>
               <button className="btn btn-link" style={{ marginLeft: 8 }} onClick={() => setShowDialog(false)}>
-                取消
+                Concel
               </button>
             </div>
           </div>
@@ -554,18 +544,18 @@ export default function LlmUsageTable() {
             </colgroup>
             <thead>
               <tr>
-                <th>名称</th>
-                <th>Chat模型</th>
-                <th>代码补全模型</th>
-                <th>已用tokens</th>
-                <th>删除</th>
+                <th>Name</th>
+                <th>Chat Model</th>
+                <th>Completion Model</th>
+                <th>Used Tokens</th>
+                <th>Delete</th>
               </tr>
             </thead>
             <tbody>
               {usageList.length === 0 ? (
                 <tr>
                   <td colSpan={5} style={{ textAlign: 'center', padding: '20px' }}>
-                    暂无服务商数据，请添加
+                    No service provider data available, please add
                   </td>
                 </tr>
               ) : (

@@ -1,4 +1,4 @@
-FROM node:18.20.2 AS base
+FROM node:20.19.5 AS base
 
 WORKDIR /overleaf/services/llm
 

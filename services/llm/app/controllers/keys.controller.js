@@ -10,27 +10,28 @@ export class KeysController {
       const sid = req.cookies['overleaf.sid'];
       const userIdentifier = await getUserIdentifier(sid);
       const { name, baseUrl, apiKey } = req.body;
-      
       await this.keysService.saveApiKey(userIdentifier, name, baseUrl, apiKey);
       res.status(200).json({ success: true });
     } catch (error) {
       res.status(400).json({ success: false, data: error.message });
     }
   }
+
   async deleteKey(req, res) {
     try {
       const sid = req.cookies['overleaf.sid'];
       const userIdentifier = await getUserIdentifier(sid);
       const { name } = req.body;
-      console.log(name)
       const result = await this.keysService.deleteApiKey(userIdentifier, name);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
+      console.log(error.message)
       res.status(400).json({ success: false, data: error.message });
     }
   }
 
   async getLlmInfo(req, res) {
+
     try {
       const sid = req.cookies['overleaf.sid'];
       const userIdentifier = await getUserIdentifier(sid);

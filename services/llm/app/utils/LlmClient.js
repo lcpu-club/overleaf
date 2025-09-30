@@ -37,11 +37,10 @@ export class LlmClient {
       httpAgent: this._agent,
       httpsAgent: this._agent,
       maxContentLength: Infinity,
-      maxBodyLength: Infinity
+      maxBodyLength: Infinity,
     });
   }
 
-  // Helper: simple retry wrapper for POST calls (network errors/timeouts)
   async _postWithRetry(path, data) {
     let lastErr;
     for (let attempt = 0; attempt <= this.retries; attempt++) {
@@ -66,17 +65,8 @@ export class LlmClient {
 
   async listModels() {
     try {
-      const data = await this._postWithRetry('/v1/models', undefined, { method: 'get' });
-      // if API uses GET, fallback to axios directly
-      if (!data || !data.data) {
-        const resp = await this.client.get('/v1/models');
-        return resp.data.data.map(model => ({
-          id: model.id,
-          object: model.object,
-          owned_by: model.owned_by
-        }));
-      }
-      return data.data.map(model => ({
+      const resp = await this.client.get('/v1/models');
+      return resp.data.data.map(model => ({
         id: model.id,
         object: model.object,
         owned_by: model.owned_by
@@ -99,9 +89,9 @@ export class LlmClient {
 
   async completion(messages, model, options = {}) {
     try {
-      const max_tokens = 50, temperature = 0, top_p = 1,max_completion_tokens = 50;
-      const stop = ["</COMPLETION>",",","，"];
-      const data = { model, messages, temperature, top_p, stop ,max_completion_tokens};
+      const max_tokens = 50, temperature = 0, top_p = 1, max_completion_tokens = 50;
+      const stop = ["</COMPLETION>", ",", "，"];
+      const data = { model, messages, temperature, top_p, stop, max_completion_tokens };
       console.log(data);
       const response = await this._postWithRetry('/v1/chat/completions', data);
       return response;

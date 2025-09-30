@@ -59,6 +59,7 @@
     "services/history-v1",
     "services/idp",
     "services/latexqc",
+    "services/llm",
     "services/notifications",
     "services/project-history",
     "services/real-time",
@@ -68,7 +69,6 @@
     "services/third-party-datastore",
     "services/third-party-references",
     "services/tpdsworker",
-    "services/web",
-    "services/llm"
+    "services/web"
   ]
 }
