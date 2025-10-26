@@ -2,7 +2,7 @@
 # Overleaf Community Edition (overleaf/overleaf)
 # ---------------------------------------------
 
-ARG OVERLEAF_BASE_TAG=ghcr.io/lcpu-club/sharelatex-base:latest
+ARG OVERLEAF_BASE_TAG=sharelatex/sharelatex-base:latest
 FROM $OVERLEAF_BASE_TAG
 
 WORKDIR /overleaf
@@ -60,6 +60,14 @@ RUN chmod 600 /etc/cron.d/crontab-deletion
 # ------------------------------------------------------------------
 COPY server-ce/init_scripts/ /etc/my_init.d/
 COPY server-ce/init_preshutdown_scripts/ /etc/my_init.pre_shutdown.d/
+
+# Remove deprecated ShareLaTeX-branded paths to satisfy start-up checks
+# The init script 000_check_for_old_bind_mounts_5.sh refuses to start if these exist
+RUN rm -rf /etc/sharelatex /var/lib/sharelatex /var/log/sharelatex || true
+
+# Ensure Overleaf log directory exists for runit services redirection
+RUN mkdir -p /var/log/overleaf \
+ && chown www-data:www-data /var/log/overleaf
 
 # Copy app settings files
 # -----------------------
