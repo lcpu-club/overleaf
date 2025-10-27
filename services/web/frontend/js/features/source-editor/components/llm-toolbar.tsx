@@ -21,7 +21,7 @@ const TrackIcon = () => (
   <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9zm1 13h-2v-6h2v6zm0-8h-2V7h2v1z" /></svg>
 )
 const Spinner = () => (
-  <div style={{ width: 16, height: 16, borderRadius: 8, border: '2px solid rgba(255,255,255,0.12)', borderTopColor: 'rgba(255,255,255,0.7)', animation: 'spin 0.9s linear infinite' }} />
+  <div style={{ width: 16, height: 16, borderRadius: 8, border: '2px solid rgba(255,255,255,0.12)', borderTopColor: 'rgba(255,255,255,0.7)', animation: 'llm-spin 0.9s linear infinite' }} />
 )
 
 /* ---------- helpers ---------- */
@@ -373,7 +373,7 @@ const LLMToolbar = forwardRef<LLMToolbarHandle, {}>((_, ref) => {
 
   return (
     <div ref={wrapRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 9999 }}>
-      <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}} 
+      <style>{`@keyframes llm-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}} 
         .llm-anchor{position:absolute;width:28px;height:28px;border-radius:999px;background:linear-gradient(180deg,#0b1220,#0f172a);color:#eef2ff;border:1px solid rgba(255,255,255,0.08);display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(2,6,23,0.45);cursor:pointer;pointer-events:auto}
         .llm-panel{position:absolute;pointer-events:auto;user-select:none}
         .llm-input-card{width:100%;background:linear-gradient(180deg,#071021,#071827);border-radius:14px;padding:12px 12px 12px 56px;position:relative;box-shadow:0 14px 40px rgba(3,8,22,0.55);border:1px solid rgba(255,255,255,0.04)}
@@ -383,11 +383,11 @@ const LLMToolbar = forwardRef<LLMToolbarHandle, {}>((_, ref) => {
         .llm-close{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;cursor:pointer}
         .llm-menu{margin-top:0px;background:linear-gradient(180deg,#071021,#071827);border-radius:12px;padding:10px 8px;color:#dfe7ee;border:1px solid rgba(255,255,255,0.04);box-shadow:0 14px 40px rgba(3,8,22,0.55)}
         .llm-item{height:40px;display:flex;align-items:center;gap:10px;padding:0 10px;border-radius:10px;cursor:pointer}
-        .paraphrase-card{pointer-events:auto;width:100%;background:#071223;border-radius:12px;padding:12px;box-shadow:0 14px 40px rgba(3,8,22,0.55);border:1px solid rgba(255,255,255,0.06);color:#e6eef8}
-        .paraphrase-text{width:100%;min-height:88px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);color:#e6eef8;outline:none;resize:vertical;box-sizing:border-box;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
-        .paraphrase-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
-        .btn{padding:8px 12px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))}
-        .btn.primary{background:linear-gradient(180deg, rgba(16,185,129,0.14), rgba(16,185,129,0.08));border:1px solid rgba(16,185,129,0.22)}
+        .llm-paraphrase-card{pointer-events:auto;width:100%;background:#071223;border-radius:12px;padding:12px;box-shadow:0 14px 40px rgba(3,8,22,0.55);border:1px solid rgba(255,255,255,0.06);color:#e6eef8}
+        .llm-paraphrase-text{width:100%;min-height:88px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);color:#e6eef8;outline:none;resize:vertical;box-sizing:border-box;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+        .llm-paraphrase-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
+        .llm-btn{padding:8px 12px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))}
+        .llm-btn.llm-primary{background:linear-gradient(180deg, rgba(16,185,129,0.14), rgba(16,185,129,0.08));border:1px solid rgba(16,185,129,0.22)}
         /* allow inner content HTML to inherit sensible typography */
         .llm-result-html { 
           overflow-x: hidden; 
@@ -521,7 +521,7 @@ const LLMToolbar = forwardRef<LLMToolbarHandle, {}>((_, ref) => {
               <button className="llm-close" onClick={() => { setPanelMode('hidden'); setAnchorShown(false); setQuery('') }} title="Close">×</button>
             </div>
 
-            <div className="paraphrase-card">
+            <div className="llm-paraphrase-card">
               <div style={{ fontSize: 13, color: '#9fb0c6' }}>{kindTitleMap['chat']}</div>
 
               {loading ? (
@@ -536,10 +536,10 @@ const LLMToolbar = forwardRef<LLMToolbarHandle, {}>((_, ref) => {
                     <div className="llm-result-html" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
                   </div>
 
-                  <div className="paraphrase-footer">
-                    <button className="btn primary" onClick={() => { setPanelMode('hidden'); setQuery(''); setResult('') }}>Cancel</button>
-                    <button className="btn primary" onClick={() => insertCodeAfterSelection(result)} disabled={!result}>Insert</button>
-                    <button className="btn primary" onClick={() => startFetch(0, 'chat')} disabled={loading || !query.trim()}>
+                  <div className="llm-paraphrase-footer">
+                    <button className="llm-btn llm-primary" onClick={() => { setPanelMode('hidden'); setQuery(''); setResult('') }}>Cancel</button>
+                    <button className="llm-btn llm-primary" onClick={() => insertCodeAfterSelection(result)} disabled={!result}>Insert</button>
+                    <button className="llm-btn llm-primary" onClick={() => startFetch(0, 'chat')} disabled={loading || !query.trim()}>
                       {loading ? <><Spinner /><span style={{ fontSize: 13, marginLeft: 8 }}>Regenerating</span></> : 'Regenerate'}
                     </button>
                   </div>
@@ -554,13 +554,13 @@ const LLMToolbar = forwardRef<LLMToolbarHandle, {}>((_, ref) => {
       {/* paraphrase panel */}
       {panelMode === 'paraphrase' && (
         <div className="llm-panel" style={{ top: panelRect.top, left: panelRect.left, width: panelRect.width }}>
-          <div className="paraphrase-card">
+          <div className="llm-paraphrase-card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontSize: 13, color: '#9fb0c6' }}>{kindTitleMap[kind]}</div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn" onClick={() => copyToClipboard(result)}><CopyIcon /> <span style={{ fontSize: 12 }}>Copy</span></button>
-                <button className="btn" onClick={() => setEditMode(s => !s)}><EditIcon /> <span style={{ fontSize: 12 }}>{editMode ? 'Done' : 'Edit'}</span></button>
-                {(kind !== 'title' && kind !== 'abstract') && (<button className="btn" onClick={() => setShowDiff(s => !s)}><TrackIcon /> <span style={{ fontSize: 12 }}>{showDiff ? 'Hide' : 'Track'}</span></button>)}
+                <button className="llm-btn" onClick={() => copyToClipboard(result)}><CopyIcon /> <span style={{ fontSize: 12 }}>Copy</span></button>
+                <button className="llm-btn" onClick={() => setEditMode(s => !s)}><EditIcon /> <span style={{ fontSize: 12 }}>{editMode ? 'Done' : 'Edit'}</span></button>
+                {(kind !== 'title' && kind !== 'abstract') && (<button className="llm-btn" onClick={() => setShowDiff(s => !s)}><TrackIcon /> <span style={{ fontSize: 12 }}>{showDiff ? 'Hide' : 'Track'}</span></button>)}
               </div>
             </div>
 
@@ -574,7 +574,7 @@ const LLMToolbar = forwardRef<LLMToolbarHandle, {}>((_, ref) => {
                 {editMode ? (
                   <textarea
                     ref={editRef}
-                    className="paraphrase-text"
+                    className="llm-paraphrase-text"
                     value={result}
                     onChange={e => setResult(e.target.value)}
                     style={{ maxHeight: contentMaxHeight, overflowY: 'auto', overflowX: 'hidden' }}
@@ -593,8 +593,8 @@ const LLMToolbar = forwardRef<LLMToolbarHandle, {}>((_, ref) => {
                   </div>
                 )}
 
-                <div className="paraphrase-footer">
-                  <button className="btn primary" onClick={() => { setPanelMode('hidden'); setAnchorShown(false); setResult(''); setQuery('') }}>Cancel</button>
+                <div className="llm-paraphrase-footer">
+                  <button className="llm-btn llm-primary" onClick={() => { setPanelMode('hidden'); setAnchorShown(false); setResult(''); setQuery('') }}>Cancel</button>
 
                   {/* Footer buttons vary by kind:
                       - title / abstract: Insert, Regenerate
@@ -603,13 +603,13 @@ const LLMToolbar = forwardRef<LLMToolbarHandle, {}>((_, ref) => {
                   */}
                   {(kind === 'title' || kind === 'abstract') ? (
                     <>
-                      <button className="btn primary" onClick={() => insertCodeAfterSelection(result)} disabled={loading || !result}>Insert</button>
+                      <button className="llm-btn llm-primary" onClick={() => insertCodeAfterSelection(result)} disabled={loading || !result}>Insert</button>
                     </>
                   ) : ((kind === 'summarize' || kind === 'explain') ? null : (
-                    <button className="btn primary" onClick={() => replaceSelectionWith(result)} disabled={loading || !result}>Replace</button>
+                    <button className="llm-btn llm-primary" onClick={() => replaceSelectionWith(result)} disabled={loading || !result}>Replace</button>
                   ))}
 
-                  <button className="btn primary" onClick={() => startFetch(kindToMode[kind], kind)} disabled={loading}>
+                  <button className="llm-btn llm-primary" onClick={() => startFetch(kindToMode[kind], kind)} disabled={loading}>
                     {loading ? <><Spinner /><span style={{ marginLeft: 8 }}>Regenerating</span></> : 'Regenerate'}
                   </button>
                 </div>
