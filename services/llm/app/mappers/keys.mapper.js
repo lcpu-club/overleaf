@@ -1,5 +1,5 @@
 import { ApiKeyModel } from '../models/api-key.model.js';
-
+import { chooseChatModel,chooseCompletionModel } from '../utils/common.js';
 export class ApiKeyMapper {
   constructor() {
     this.model = ApiKeyModel.getModel();
@@ -28,7 +28,9 @@ export class ApiKeyMapper {
         { upsert: true }
       );
     }
-
+   const chatModel= chooseChatModel(models);
+   const completionModel = chooseCompletionModel(models);
+    
     // insert new api key info
     const newInfo = {
       name,
@@ -37,8 +39,8 @@ export class ApiKeyMapper {
       models,
       updatedAt: new Date(),
       usedTokens: 0,
-      usingChatModel: 0,
-      usingCompletionModel: 0,
+      usingChatModel: chatModel,
+      usingCompletionModel: completionModel,
     };
 
     await this.model.findByIdAndUpdate(

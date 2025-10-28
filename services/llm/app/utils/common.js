@@ -31,20 +31,20 @@ export const getUserIdentifier = async (sid) => {
 };
 
 function removeCompletionPrefix(str) {
-    // define the prefix to remove
-    const prefix = '<COMPLETION>';
-    const prefix2 = '<COMPLETION/>'
-    
-    // check if the string starts with the prefix
-    if (str.startsWith(prefix)) {
-        // return the string without the prefix
-        return str.slice(prefix.length);
-    }
-    if(str.startsWith(prefix2)){
-        return str.slice(prefix2.length);
-    }
-    // return the original string if no prefix matched
-    return str.trim();
+  // define the prefix to remove
+  const prefix = '<COMPLETION>';
+  const prefix2 = '<COMPLETION/>'
+
+  // check if the string starts with the prefix
+  if (str.startsWith(prefix)) {
+    // return the string without the prefix
+    return str.slice(prefix.length);
+  }
+  if (str.startsWith(prefix2)) {
+    return str.slice(prefix2.length);
+  }
+  // return the original string if no prefix matched
+  return str.trim();
 }
 /**
  * delete content after the last newline (including the newline itself)
@@ -102,11 +102,40 @@ function removeTrailingTokenPrefix(str, token = '<COMPLETION/>', minPrefixLen = 
   return str;
 }
 
-export function formatResult(str){
+export function formatResult(str) {
   let result = removeCompletionPrefix(str);//clear <COMPLETION> or <COMPLETION/>
   let result1 = removeAfterLastNewline(result, { keepLastNewline: false, trimTrailingWhitespace: true });//clear after last newline
   let result2 = removeTrailingTokenPrefix(result1, '<COMPLETION/>', 2);//clear trailing incomplete <COMPLETION/> prefix
   return result2.trim(); //clear leading/trailing whitespace
+}
+
+export function chooseChatModel(models) {
+  // Loop through the models array
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    // Check if the current element has an id property
+    if (model && typeof model.id === 'string') {
+      // Convert id to lowercase and check if it contains "deepseek-v3"
+      const lowerId = model.id.toLowerCase();
+      if (lowerId.includes('deepseek-v3')) {
+        return i; // Return the current index if found
+      }
+    }
+  }
+  // Return 0 by default if not found
+  return 0;
+}
+
+export function chooseCompletionModel(models) {
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    const lowerId = model.id.toLowerCase();
+    if (lowerId.includes('gpt-5-mini')) {
+      return i; // Return the current index if found
+    }
+  }
+  // Return 0 by default if not found
+  return 0;
 }
 
 
