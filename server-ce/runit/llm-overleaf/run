@@ -1,0 +1,16 @@
+#!/bin/bash
+
+NODE_PARAMS=""
+if [ "$DEBUG_NODE" == "true" ]; then
+	  echo "running debug - llm"
+	  NODE_PARAMS="--inspect=0.0.0.0:30120"
+fi
+
+if [ -z "$REDIS_URL" ] && [ -n "$REDIS_HOST" ]; then
+	export REDIS_URL="redis://$REDIS_HOST:${REDIS_PORT:-6379}"
+fi
+if [ -z "$MONGO_URL" ] && [ -n "$OVERLEAF_MONGO_URL" ]; then
+	export MONGO_URL="$OVERLEAF_MONGO_URL"
+fi
+
+exec /sbin/setuser www-data /usr/bin/node $NODE_PARAMS /overleaf/services/llm/app.js >> /var/log/overleaf/llm.log 2>&1

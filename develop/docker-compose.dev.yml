@@ -84,7 +84,7 @@ services:
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:
-      - "127.0.0.1:9236:9229"
+      - "127.0.0.1:9238:9229"
     volumes:
       - ../services/references/app:/overleaf/services/references/app
       - ../services/references/config:/overleaf/services/references/config
@@ -123,8 +123,20 @@ services:
       - ../services/real-time/app.js:/overleaf/services/real-time/app.js
       - ../services/real-time/config:/overleaf/services/real-time/config
 
+  llm:
+    command: ["node", "--watch", "app.js"]
+    environment:
+      - NODE_OPTIONS=--inspect=0.0.0.0:9229
+    ports:
+      - "127.0.0.1:9241:9229"
+    volumes:
+      - ../services/llm/app:/overleaf/app
+      - ../services/llm/app.js:/overleaf/services/llm/app.js
+      - ../services/llm/config:/overleaf/services/llm/config
+      
+
   web:
-    command: ["node", "--watch", "app.js", "--watch-locales"]
+    command: ["node", "--watch", "app.mjs", "--watch-locales"]
     environment:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     ports:

@@ -22,6 +22,7 @@ import { SSOAlert } from './emails/sso-alert'
 import OLRow from '@/features/ui/components/ol/ol-row'
 import OLCol from '@/features/ui/components/ol/ol-col'
 import OLCard from '@/features/ui/components/ol/ol-card'
+import LlmUsageTable from './llm/LlmUsageTable'
 
 function SettingsPageRoot() {
   const { isReady } = useWaitForI18n()
@@ -64,6 +65,7 @@ function SettingsPageContent() {
               <PasswordSection />
             </OLCol>
           </OLRow>
+          <LlmUsageTable/>
           <hr />
           <SecuritySection />
           <SplitTestProvider>

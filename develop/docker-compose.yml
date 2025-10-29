@@ -123,6 +123,8 @@ services:
       dockerfile: services/real-time/Dockerfile
     env_file:
       - dev.env
+    environment:
+      - SESSION_SECRET=helloworld
 
   redis:
     image: redis:5
@@ -140,6 +142,16 @@ services:
     volumes:
       - spelling-cache:/overleaf/services/spelling/cache
 
+  llm:
+    build:
+      context: ..
+      dockerfile: services/llm/Dockerfile
+    env_file:
+      - dev.env
+    depends_on:
+      - mongo
+      - redis
+
   web:
     build:
       context: ..
@@ -153,7 +165,8 @@ services:
       - EMAIL_CONFIRMATION_DISABLED=true
       - NODE_ENV=development
       - OVERLEAF_ALLOW_PUBLIC_ACCESS=true
-    command: ["node", "app.js"]
+      - SESSION_SECRET=helloworld
+    command: ["node", "app.mjs"]
     volumes:
       - sharelatex-data:/var/lib/overleaf
       - web-data:/overleaf/services/web/data
@@ -172,8 +185,10 @@ services:
       - project-history
       - real-time
       - spelling
+      - llm
 
   webpack:
+    user: root
     build:
       context: ..
       dockerfile: services/web/Dockerfile
