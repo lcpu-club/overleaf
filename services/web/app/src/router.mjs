@@ -498,7 +498,7 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   )
 
   privateApiRouter.post(
-    '/api/v1/admin/session',
+    '/internal/admin/session',
     AuthenticationController.requirePrivateApiAuth(),
     AdminSessionController.createSession
   )

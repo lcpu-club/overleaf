@@ -1,6 +1,7 @@
 const AuthenticationController = require('../Authentication/AuthenticationController')
 const EmailHelper = require('../Helpers/EmailHelper')
 const UserGetter = require('../User/UserGetter')
+const { expressify } = require('@overleaf/promise-utils')
 
 async function createSession(req, res) {
   const email = EmailHelper.parseEmail(req.body?.email)
@@ -31,5 +32,5 @@ async function createSession(req, res) {
 }
 
 module.exports = {
-  createSession,
+  createSession: expressify(createSession),
 }
