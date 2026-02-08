@@ -496,6 +496,12 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     UserInfoController.getPersonalInfo
   )
 
+  privateApiRouter.post(
+    '/internal/create-user-session',
+    AuthenticationController.requirePrivateApiAuth(),
+    UserController.createSession
+  )
+
   webRouter.get(
     '/user/reconfirm',
     UserPagesController.renderReconfirmAccountPage
