@@ -22,6 +22,7 @@ import UserInfoController from './Features/User/UserInfoController.js'
 import UserController from './Features/User/UserController.js'
 import UserEmailsController from './Features/User/UserEmailsController.js'
 import UserPagesController from './Features/User/UserPagesController.js'
+import AdminSessionController from './Features/Admin/AdminSessionController.js'
 import TutorialController from './Features/Tutorial/TutorialController.js'
 import DocumentController from './Features/Documents/DocumentController.js'
 import CompileManager from './Features/Compile/CompileManager.js'
@@ -494,6 +495,12 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     '/user/:user_id/personal_info',
     AuthenticationController.requirePrivateApiAuth(),
     UserInfoController.getPersonalInfo
+  )
+
+  privateApiRouter.post(
+    '/api/v1/admin/session',
+    AuthenticationController.requirePrivateApiAuth(),
+    AdminSessionController.createSession
   )
 
   webRouter.get(

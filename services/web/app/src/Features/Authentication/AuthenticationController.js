@@ -663,8 +663,16 @@ function _loginAsyncHandlers(req, user, anonymousAnalyticsId, isNewUser) {
   return (user._login_req_ip = req.ip)
 }
 
+AuthenticationController.createSessionForUser = function (user, req, callback) {
+  const anonymousAnalyticsId = req.session.analyticsId
+  const isNewUser = req.session.justRegistered || false
+  _loginAsyncHandlers(req, user, anonymousAnalyticsId, isNewUser)
+  _afterLoginSessionSetup(req, user, callback)
+}
+
 AuthenticationController.promises = {
   finishLogin: AuthenticationController._finishLoginAsync,
+  createSessionForUser: promisify(AuthenticationController.createSessionForUser),
 }
 
 module.exports = AuthenticationController
